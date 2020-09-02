@@ -1,22 +1,16 @@
-import { Controller, UnauthorizedException, Post, Body, Inject, forwardRef, UseGuards, Req } from '@nestjs/common';
-import { Repository } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
-import * as password from 'password-hash-and-salt';
-import * as jwt from 'jsonwebtoken';
-import * as dotenv from 'dotenv';
+import { Controller, UnauthorizedException, Post, Body, Inject, forwardRef, UseGuards, Req, Get } from '@nestjs/common';
 import { AuthService } from '../services/auth.service';
-import { AuthGuard } from '@nestjs/passport';
-import { localStrategy } from '../strategies';
-import { localAuthGuard } from 'src/guards/local-auth.guard';
-import { User } from 'src/common/decorators';
-import { User as UserEntity} from 'src/entities';
+import { localAuthGuard, JwtAuthGuard } from '../../guards';
+import { User, Auth } from 'src/common/decorators';
+import { User as UserEntity } from 'src/entities';
+import { get } from 'http';
+import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 
-dotenv.config();
-
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(
-      private authService: AuthService
+      private readonly authService: AuthService
     ){}
 
   @Post('/register')
@@ -27,8 +21,33 @@ export class AuthController {
   @UseGuards(localAuthGuard)
   @Post('/login')
   async login(@User() user: UserEntity){
-    return user
+    const data =  await this.authService.login(user)
+    return {
+      message: 'Login sucess',
+      data
+    }
   }
+
+  @Auth()
+  @Get('profile')
+  profile(@User() user: UserEntity){
+    return {
+      message: 'Peticion correcta',
+      user
+    }
+  }
+
+  @Auth()
+  @Get('/refresh')
+  async refreshToken(@User() user: UserEntity){
+    const data =  await this.authService.login(user)
+    return {
+      message: 'Fefresh sucess',
+      data
+    }
+  }
+
+
 
 }
 

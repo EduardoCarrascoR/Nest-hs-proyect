@@ -46,8 +46,8 @@ export class UsersService {
         return await this.userRepository.find();
     }
 
-    async findOneUser(options: any): Promise<UserDTO> {
-        return await this.userRepository.findOne(options);
+    async findOneUser(id: any): Promise<UserDTO> {
+        return await this.userRepository.findOne(id );
     } 
 
     async findOneUserByEmail(email: string){
@@ -59,11 +59,10 @@ export class UsersService {
     } 
 
     async updateUser(id: number, newValue: UpdateUserDTO){
-        return await this.userRepository.update({userId: id}, newValue);
+        return await this.userRepository.update({ id }, newValue);
     }
 
     private dgv(rut: number, dv: string){  
-        console.log(rut,dv)
         var M=0,S=1;
         for(;rut;rut=Math.floor(rut/10)){
         S=(S+rut%10*(9-M++%6))%11;}

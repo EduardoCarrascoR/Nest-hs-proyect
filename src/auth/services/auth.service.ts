@@ -1,11 +1,14 @@
 import { Injectable, forwardRef, Inject, InternalServerErrorException } from '@nestjs/common';
+import { User } from 'src/entities';
 import { UsersService } from 'src/modules/users/services/users.service';
+import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from "bcrypt";
 
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly userService: UsersService
+    private readonly userService: UsersService,
+    private readonly jwtService: JwtService
   ){}
   
 
@@ -13,16 +16,21 @@ export class AuthService {
     const user = await this.userService.findOneUserByEmail(email);
 
     if(user && bcrypt.compare(pass, user.password)){
-      return user;
+      const { password, ...rest } = user
+      return rest;
     }
 
     return null
   }
 
-  login(credentials: any) {
-    
+  async login(user: User) {
+    const { id, ...rest } = user;
+    const payload = { sub: id };
+
+    return {
+      ...rest,
+      accessToken: this.jwtService.sign(payload)
+
+    }
   }
-  /*
-    Implementation that makes use of this.usersService
-  */
 }
