@@ -8,6 +8,8 @@ import { AuthService } from '../services/auth.service';
 import { AuthGuard } from '@nestjs/passport';
 import { localStrategy } from '../strategies';
 import { localAuthGuard } from 'src/guards/local-auth.guard';
+import { User } from 'src/common/decorators';
+import { User as UserEntity} from 'src/entities';
 
 dotenv.config();
 
@@ -24,39 +26,9 @@ export class AuthController {
 
   @UseGuards(localAuthGuard)
   @Post('/login')
-  async login(@Req() req: any){
-    return req.user
+  async login(@User() user: UserEntity){
+    return user
   }
-
-    /* console.log('Login attempt, user:', email);
-
-    const user = await this.userRepository.findOne({ email });
-
-    if (!user){
-      console.log('User does not exist on the database');
-      
-      throw new UnauthorizedException();
-    }
-
-    return new Promise((resolve, reject) => {
-      password(plainTextPassword).verifyAgainst(
-        user.password,
-        (err, verified) => {
-          if (!verified) {
-            reject(new UnauthorizedException());
-          }else {
-            console.log('Login success!');
-          }
-
-          const authJwtToken = jwt.sign({ email, role: user.role }, process.env.JWT_SECRET);
-
-          resolve({ token: authJwtToken });
-        }
-      )
-
-    }); */
-
-
 
 }
 
