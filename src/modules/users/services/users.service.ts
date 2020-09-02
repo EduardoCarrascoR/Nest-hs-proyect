@@ -42,18 +42,10 @@ export class UsersService {
 
 
 
-    private save(user: CreateUserDv): UserData{
-        let newValue = {
-            firstname: user.firstname,
-            lastname: user.lastname,
-            rut: parseInt(user.rut.toString().concat(user.rutDv.toString())),
-            phone: user.phone,
-            password: user.password,
-            email: user.email
-        }
-            
-        return newValue as UserData;
+    async updateUser(id: number, newValue: UpdateUserDTO){
+        return await this.userRepository.update({userId: id}, newValue);
     }
+
     private dgv(rut: number, dv: string){  
         var M=0,S=1;
         for(;rut;rut=Math.floor(rut/10)){

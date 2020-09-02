@@ -1,6 +1,6 @@
-import { Controller, Get, Res, HttpStatus, Param, Put, Body, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Res, HttpStatus, Param, Put, Body, BadRequestException, Post } from '@nestjs/common';
 import { UsersService } from '../services/users.service';
-import { UpdateUser, UserData } from '../interface/user.interface';
+import { UpdateUserDTO, CreateUserDTO } from '../dtos/user.DTO';
 
 @Controller('users')
 export class UsersController {
@@ -20,11 +20,17 @@ export class UsersController {
         return res.status(HttpStatus.OK).json(user);
     }
 
+    @Post()
+    async createUser(@Body() userdto: CreateUserDTO ) {
+        const user = await this.userService.addUser(userdto)
+    }
+
     @Put(':id')
-    async updateUser(@Body() changes: UpdateUser, @Param() params) {
+    async updateUser(@Body() changes: UpdateUserDTO, @Param() params) {
         if(!params.id) throw new BadRequestException("Can't update user id")
 
         return this.userService.updateUser(params.id, changes);
     }
+
 
 }
