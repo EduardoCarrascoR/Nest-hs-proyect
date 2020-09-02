@@ -1,32 +1,34 @@
-import { IsNotEmpty, IsEmail, IsString, MinLength, MaxLength, IsNumber } from 'class-validator';
+import { IsNotEmpty, IsEmail, IsString, MinLength, MaxLength, IsNumber, IsPhoneNumber } from 'class-validator';
 import { UserRole } from '../enums'
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateUserDTO {
-    @IsNumber()
+    @IsNumber() @ApiProperty()
     readonly rutSD: number; 
 
-    @IsString()
+    @IsString() @ApiProperty()
     readonly rutDv: string;
 
-    @IsString()
+    @IsString() @ApiProperty()
     readonly firstname: string;
 
-    @IsString()
+    @IsString() @ApiProperty()
     readonly lastname: string;
     
-    @IsString()
+    @IsString() @ApiProperty()
     readonly role: string;
     
+    @ApiProperty()
     readonly phone: string;
 
-    @IsEmail()
+    @IsEmail() @ApiProperty()
     readonly email: string;
 
-    @IsString() @MinLength(8) @MaxLength(200)
+    @IsString() @MinLength(8) @MaxLength(200) @ApiProperty()
     readonly password: string;
 }
 
-export interface UserDTO {
+export class UserDTO {
     readonly firstname: string;
     readonly lastname: string;
     readonly role: string;
@@ -36,11 +38,16 @@ export interface UserDTO {
     readonly password: string;
 }
 
-export interface UpdateUserDTO {
+export class UpdateUserDTO {
+    @ApiProperty()
     readonly firstname?: string;
+    @ApiProperty()
     readonly lastname?: string;
+    @ApiProperty()
     readonly phone?: string;
+    @ApiProperty()
     readonly password?: string;
+    @ApiProperty()
     readonly email?: string;
 
 }
