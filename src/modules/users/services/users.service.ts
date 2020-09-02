@@ -58,27 +58,6 @@ export class UsersService {
             .getOne()
     } 
 
-    // revisar
-    /* async findByLogin({ username, password }: LoginUserDto): Promise<UserDto> {
-        const user = await this.userRepo.findOne({ where: { username } });
-    
-        if (!user) {
-          throw new HttpException('User not found', HttpStatus.UNAUTHORIZED);
-        }
-    
-        // compare passwords
-        const areEqual = await comparePasswords(user.password, password);
-    
-        if (!areEqual) {
-          throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
-        }
-    
-        return toUserDto(user);
-    } */
-    /* async findByPayload({ username }: any): Promise<UserDTO> {
-        return await this.findOneUser({ where: { username } });
-    }*/
-
     async updateUser(id: number, newValue: UpdateUserDTO){
         return await this.userRepository.update({userId: id}, newValue);
     }
