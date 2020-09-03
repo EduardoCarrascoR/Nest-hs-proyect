@@ -13,8 +13,8 @@ export class User {
   @Column("varchar", { name: "lastname", nullable: true, length: 45 })
   lastname: string | null;
 
-  @Column("varchar", { name: "role", length: 45 })
-  role: string;
+  @Column({ type: 'simple-array'})
+  roles: string[];
 
   @Column("varchar", { name: "rut", unique: true, length: 11 })
   rut: string;

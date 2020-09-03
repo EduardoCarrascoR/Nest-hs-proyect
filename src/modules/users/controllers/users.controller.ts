@@ -1,9 +1,11 @@
 import { Controller, Get, Res, HttpStatus, Param, Put, Body, BadRequestException, Post, UseGuards } from '@nestjs/common';
 import { UsersService } from '../services/users.service';
-import { UpdateUserDTO, CreateUserDTO } from '../dtos/user.DTO';
-import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
-import { JwtAuthGuard } from 'src/guards';
+import { CreateUserDTO } from '../dtos/user.DTO';
+import { ApiTags } from '@nestjs/swagger';
 import { Auth } from 'src/common/decorators';
+import { EditUserDto } from '../dtos/edit-user.dto';
+import { ACGuard, UseRoles } from 'nest-access-control';
+import { AppResources } from 'src/common/enums';
 
 @ApiTags('Users')
 @Controller('users')
@@ -19,15 +21,20 @@ export class UsersController {
         return res.status(HttpStatus.OK).json(users)
     }
 
-    @Auth()
+    @Auth({
+        possession: 'any',
+        action: 'create',
+        resource: AppResources.USER,
+    })
     @Post()
     async createUser(@Body() userdto: CreateUserDTO ) {
-        const user = await this.userService.addUser(userdto)
+        const user = await this.userService.addUser(userdto);
+        return { message: 'User created', user };
     }
 
     @Auth()
     @Put(':id')
-    async updateUser(@Body() changes: UpdateUserDTO, @Param() params) {
+    async updateUser(@Body() changes: EditUserDto, @Param() params) {
         if(!params.id) throw new BadRequestException("Can't update user id")
 
         return this.userService.updateUser(params.id, changes);

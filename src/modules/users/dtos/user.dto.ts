@@ -1,6 +1,7 @@
-import { IsNotEmpty, IsEmail, IsString, MinLength, MaxLength, IsNumber, IsPhoneNumber } from 'class-validator';
-import { UserRole } from '../enums'
+import { IsNotEmpty, IsEmail, IsString, MinLength, MaxLength, IsNumber, IsPhoneNumber, IsEnum } from 'class-validator';
+import { AppRoles } from '../../../common/enums'
 import { ApiProperty } from '@nestjs/swagger';
+import { EnumToString } from 'src/common/helpers/enumToString';
 
 export class CreateUserDTO {
     @IsNumber() @ApiProperty()
@@ -15,8 +16,11 @@ export class CreateUserDTO {
     @IsString() @ApiProperty()
     readonly lastname: string;
     
-    @IsString() @ApiProperty()
-    readonly role: string;
+    @IsEnum(AppRoles, {
+        each: true,
+        message: `must be a valid role value, ${ EnumToString(AppRoles)}`
+    }) @ApiProperty()
+    readonly roles: string[];
     
     @ApiProperty()
     readonly phone: string;
@@ -31,31 +35,13 @@ export class CreateUserDTO {
 export class UserDTO {
     readonly firstname: string;
     readonly lastname: string;
-    readonly role: string;
+    @IsEnum(AppRoles, {
+        each: true,
+        message: `must be a valid role value, ${ EnumToString(AppRoles) }`
+    }) @ApiProperty()
+    readonly roles: string[];
     readonly rut: string;
     readonly phone: string;
     readonly email: string;
     readonly password: string;
-}
-
-export class UpdateUserDTO {
-    @ApiProperty()
-    readonly firstname?: string;
-    @ApiProperty()
-    readonly lastname?: string;
-    @ApiProperty()
-    readonly phone?: string;
-    @ApiProperty()
-    readonly password?: string;
-    @ApiProperty()
-    readonly email?: string;
-
-}
-
-export class LoginUserDto {
-  @IsNotEmpty()
-  readonly username: string;
-
-  @IsNotEmpty()
-  readonly password: string;
 }

@@ -2,10 +2,10 @@ import { NestFactory, APP_FILTER } from '@nestjs/core';
 import { AppModule } from './app.module';
 import "dotenv/config";
 import { Logger, ValidationPipe } from '@nestjs/common';
-import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { initSwagger } from './app.swagger';
 import { PORT } from './config/constants';
 import { ConfigService } from '@nestjs/config';
+import { setDefaultUser } from './config/default-user';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -17,6 +17,7 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
 
   initSwagger(app);
+  setDefaultUser(config);
   app.useGlobalPipes(new ValidationPipe());
   await app.listen(port);
   logger.log(`Server is running in ${ await app.getUrl() }`)
