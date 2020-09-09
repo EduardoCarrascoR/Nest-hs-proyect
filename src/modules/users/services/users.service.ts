@@ -1,6 +1,6 @@
 import { Injectable, forwardRef, Inject, HttpException, HttpStatus, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from "@nestjs/typeorm";
-import { User } from '../../../entities/User.entity';
+import { User } from '../../../entities';
 import { Repository } from 'typeorm';
 import { UserDTO, CreateUserDTO } from '../dtos/user.DTO';
 import { toUserDto } from 'src/shared/mapper';
@@ -35,7 +35,7 @@ export class UsersService {
 
             return toUserDto(user);
         } else {
-            throw new HttpException('Rut not valid', HttpStatus.BAD_REQUEST); // REVISAR COMO HACER
+            throw new HttpException('Rut not valid', HttpStatus.BAD_REQUEST); 
         } 
     }
     
@@ -43,9 +43,11 @@ export class UsersService {
         return await this.userRepository.find();
     }
 
-    async findOneUser(id: any) {
-        const user = await this.userRepository.findOne(id);
-        if (!user) throw new NotFoundException('User does not exists')
+    async findOneUser(id: number, userEntity?: User) {
+        const user = await this.userRepository.findOne(id)
+        .then(u => !userEntity ? u : !!u && userEntity.id === u.id ? u : null)
+
+        if (!user) throw new NotFoundException('User does not exists or unauthorized')
 
         return user;
     } 
@@ -58,8 +60,10 @@ export class UsersService {
             .getOne()
     } 
 
-    async updateUser(id: number, newValue: EditUserDto){
-        return await this.userRepository.update({ id }, newValue);
+    async updateUser(id: number, newValue: EditUserDto, userEntity?: User){
+        const user = await this.findOneUser(id, userEntity);
+        const editedUser = await Object.assign(user, newValue);
+        return await this.userRepository.save(editedUser);
     }
 
     private dgv(rut: number, dv: string){  

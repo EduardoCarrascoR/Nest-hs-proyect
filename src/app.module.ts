@@ -23,6 +23,7 @@ import { roles } from './app.roles';
         synchronize: true,
         logging: true,
         logger: 'file',
+        
       }),
     }),
     ConfigModule.forRoot({
