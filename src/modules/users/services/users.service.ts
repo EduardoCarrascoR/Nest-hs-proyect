@@ -3,9 +3,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { User } from '../../../entities';
 import { Repository } from 'typeorm';
 import { UserDTO, CreateUserDTO } from '../dtos/user.DTO';
-import { toUserDto } from 'src/shared/mapper';
 import { EditUserDto } from '../dtos/edit-user.dto';
-import { config } from 'rxjs';
 
 @Injectable()
 export class UsersService {
@@ -32,8 +30,8 @@ export class UsersService {
             });
 
             await this.userRepository.save(user)
-
-            return toUserDto(user);
+            const { password, ...rest2 } = user
+            return rest2;
         } else {
             throw new HttpException('Rut not valid', HttpStatus.BAD_REQUEST); 
         } 
