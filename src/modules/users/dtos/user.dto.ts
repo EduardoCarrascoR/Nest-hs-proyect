@@ -43,5 +43,4 @@ export class UserDTO {
     readonly rut: string;
     readonly phone: string;
     readonly email: string;
-    readonly password: string;
 }
