@@ -1,10 +1,13 @@
 {
   "name": "hsecurity-api",
-  "version": "0.0.1",
-  "description": "",
+  "version": "1.0.1",
+  "description": "High Security App",
   "author": "Eduardo Carrasco Romero",
   "private": true,
   "license": "UNLICENSED",
+  "engines": {
+    "node": "12.18.3"
+  },
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "nest build",
