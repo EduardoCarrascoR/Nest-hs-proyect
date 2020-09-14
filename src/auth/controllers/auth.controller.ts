@@ -13,11 +13,6 @@ export class AuthController {
       private readonly authService: AuthService
     ){}
 
-  @Post('/register')
-  async register(@Body() credentials) {
-    return ""
-  } 
-
   @UseGuards(localAuthGuard)
   @Post('/login')
   async login(@Body() loginDto: loginDto, @User() user: UserEntity){

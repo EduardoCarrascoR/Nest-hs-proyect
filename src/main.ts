@@ -9,6 +9,11 @@ import { setDefaultUser } from './config/default-user';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.enableCors({
+    origin: true,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    allowedHeaders: "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+});
   const logger = new Logger();
   const config = app.get(ConfigService);
   const port = Number(config.get<string>(PORT)) || 3000;

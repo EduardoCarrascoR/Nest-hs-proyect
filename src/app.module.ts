@@ -23,7 +23,8 @@ import { roles } from './app.roles';
         synchronize: true,
         logging: true,
         logger: 'file',
-        
+        connectTimeout: 10000,
+        ETIMEDOUT: 20 * 10000
       }),
     }),
     ConfigModule.forRoot({
