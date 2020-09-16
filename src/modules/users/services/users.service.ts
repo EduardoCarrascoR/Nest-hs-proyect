@@ -13,11 +13,12 @@ export class UsersService {
     ){}
 
     async addUser(userDTO: CreateUserDTO): Promise<UserDTO> {
-        const { rutSD, rutDv, ...rest } = userDTO;
-        let value = await this.dgv(rutSD,rutDv)
+        const { rut, ...rest } = userDTO;
+        const rutform = await this.rutFormat(rut)
+        let value = await this.dgv(rutform.cuerpo,rutform.dv)
         
         if (value===true) {
-            const rut = rutSD.toString().concat(rutDv.toString());
+            const rut = rutform.cuerpo.toString().concat(rutform.dv.toString());
             const userInDb = await this.userRepository.findOne({ 
                 where: { rut } 
             }); 
@@ -50,10 +51,10 @@ export class UsersService {
         return user;
     } 
 
-    async findOneUserByEmail(email: string){
+    async findOneUserByRut(rut: string){
         return await this.userRepository
             .createQueryBuilder('user')
-            .where({ email })
+            .where({ rut })
             .addSelect('user.password')
             .getOne()
     } 
@@ -82,5 +83,15 @@ export class UsersService {
               if(dv===(S.toString())){return true}else{return false}
               break;
         }
-   }
+    }
+
+    private rutFormat(rut: string) {
+        var valor = rut.replace('.','').replace('.','').replace('-','');
+
+        // Aislar Cuerpo y Dígito Verificador
+        let cuerpo = Number(valor.slice(0,-1));
+        let dv = valor.slice(-1).toUpperCase();
+
+        return { cuerpo, dv }
+    }
 }

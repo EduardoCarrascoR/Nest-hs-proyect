@@ -4,11 +4,9 @@ import { ApiProperty } from '@nestjs/swagger';
 import { EnumToString } from 'src/common/helpers/enumToString';
 
 export class CreateUserDTO {
-    @IsNumber() @ApiProperty()
-    readonly rutSD: number; 
 
     @IsString() @ApiProperty()
-    readonly rutDv: string;
+    readonly rut: string; 
 
     @IsString() @ApiProperty()
     readonly firstname: string;
