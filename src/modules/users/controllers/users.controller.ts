@@ -1,10 +1,9 @@
 import { Controller, Get, Res, HttpStatus, Param, Put, Body, BadRequestException, Post, UseGuards } from '@nestjs/common';
 import { UsersService } from '../services/users.service';
-import { CreateUserDTO } from '../dtos/user.DTO';
+import { CreateUserDTO, EditUserDto } from '../dtos/';
 import { ApiTags } from '@nestjs/swagger';
 import { Auth, User } from 'src/common/decorators';
-import { EditUserDto } from '../dtos/edit-user.dto';
-import { ACGuard, UseRoles, InjectRolesBuilder, RolesBuilder } from 'nest-access-control';
+import { InjectRolesBuilder, RolesBuilder } from 'nest-access-control';
 import { AppResources } from 'src/common/enums';
 import { User as UserEntity} from 'src/entities';
 
@@ -15,17 +14,17 @@ export class UsersController {
         private readonly userService: UsersService,
         @InjectRolesBuilder()
         private readonly rolesBuilder: RolesBuilder
-    ){}
+    ) {}
 
     @Auth({
         possession: 'any',
-        action: 'create',
+        action: 'read',
         resource: AppResources.USER,
     })
     @Get('/all')
     async getUsers(@Res() res) {
         const users = await this.userService.findAllUser();
-        return res.status(HttpStatus.OK).json(users)
+        return res.status(HttpStatus.OK).json(users);
     }
 
     @Auth({
@@ -62,7 +61,7 @@ export class UsersController {
             data = await this.userService.updateUser(id, rest, user)
         }
 
-        return { message: 'User edited', data}
+        return { message: 'User edited', data }
     }
 
 
