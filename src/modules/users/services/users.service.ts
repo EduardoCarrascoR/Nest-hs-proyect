@@ -23,7 +23,7 @@ export class UsersService {
                 where: { rut } 
             }); 
             if (userInDb) {
-                throw new HttpException('User already exists', HttpStatus.BAD_REQUEST);    
+                throw new HttpException({ success: false, status: HttpStatus.BAD_REQUEST, message:'User already exists'}, HttpStatus.BAD_REQUEST);    
             }
             const user: User = await this.userRepository.create({
                 rut,
@@ -34,12 +34,20 @@ export class UsersService {
             const { password, ...rest2 } = user
             return rest2;
         } else {
-            throw new HttpException('Rut not valid', HttpStatus.BAD_REQUEST); 
+            throw new HttpException({ success: false, status: HttpStatus.BAD_REQUEST, message:'Rut not valid'}, HttpStatus.BAD_REQUEST); 
         } 
     }
     
-    async findAllUser(): Promise<UserDTO[]> {
-        const user = await this.userRepository.find();
+    async findAllUsers(): Promise<UserDTO[]> {
+        const users = await this.userRepository.find();
+        return users;
+    }
+    
+    async findAllGuards( userEntity?: User): Promise<UserDTO[]> {
+        const user = await this.userRepository.find({
+            where: { roles: ['Guard']}
+        })
+        
         return user;
     }
 
@@ -47,22 +55,30 @@ export class UsersService {
         const user = await this.userRepository.findOne(id)
         .then(u => !userEntity ? u : !!u && userEntity.id === u.id ? u : null)
 
-        if (!user) throw new NotFoundException('User does not exists or unauthorized')
-
+        if (!user) throw new HttpException({ success: false, status: HttpStatus.NOT_FOUND, message: 'User does not exists or unauthorized'}, HttpStatus.NOT_FOUND)
+        
         return user;
-    } 
+    }
 
+
+    
     async findOneUserByRut(rut: string){
         return await this.userRepository
-            .createQueryBuilder('user')
-            .where({ rut })
-            .addSelect('user.password')
-            .getOne()
+        .createQueryBuilder('user')
+        .where({ rut })
+        .addSelect('user.password')
+        .getOne()
     } 
-
+    
     async updateUser(id: number, newValue: EditUserDto, userEntity?: User){
-        const user = await this.findOneUser(id, userEntity);
+        const user = await this.findOneUser(id, userEntity)
+        .then(u => !userEntity ? u : !!u && userEntity.id === u.id ? u : null);
+
+        if (!user) throw new HttpException({ success: false, status: HttpStatus.NOT_FOUND, message: 'User does not exists or unauthorized'}, HttpStatus.NOT_FOUND)
+        
+        
         const editedUser = await Object.assign(user, newValue);
+        
         return await this.userRepository.save(editedUser);
     }
 

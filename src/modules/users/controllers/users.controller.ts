@@ -23,8 +23,19 @@ export class UsersController {
     })
     @Get('/all')
     async getUsers(@Res() res) {
-        const users = await this.userService.findAllUser();
-        return res.status(HttpStatus.OK).json({ success: true, users: users });
+        const users = await this.userService.findAllUsers();
+        return res.status(HttpStatus.ACCEPTED).json({ success: true, users: users });
+    }
+
+    @Auth({
+        possession: 'any',
+        action: 'read',
+        resource: AppResources.USER,
+    })
+    @Get('/allGuards')
+    async getGuards(@Res() res) {
+        const guards = await this.userService.findAllGuards();
+        return res.status(HttpStatus.ACCEPTED).json({ success: true, guards: guards });
     }
 
     @Auth({
@@ -33,9 +44,9 @@ export class UsersController {
         resource: AppResources.USER,
     })
     @Post()
-    async createUser(@Body() userdto: CreateUserDTO ) {
+    async createUser(@Body() userdto: CreateUserDTO, @Res() res) {
         const user = await this.userService.addUser(userdto);
-        return { success: true, message: 'User created', user };
+        return res.status(HttpStatus.CREATED).json({ success: true, message: 'User created', user });
     }
 
     @Auth({
@@ -44,7 +55,7 @@ export class UsersController {
         resource: AppResources.USER,
     })
     @Put(':id')
-    async updateUser(@Param('id') id: number, @Body() changes: EditUserDto, @User() user: UserEntity) {
+    async updateUser(@Param('id') id: number, @Body() changes: EditUserDto, @User() user: UserEntity, @Res() res) {
         
         let data;
         if(!id) throw new BadRequestException("Can't update user id")
@@ -61,7 +72,7 @@ export class UsersController {
             data = await this.userService.updateUser(id, rest, user)
         }
 
-        return { success: true, message: 'User edited', data }
+        return res.status(HttpStatus.OK).json({ success: true, message: 'User edited', data })
     }
 
 

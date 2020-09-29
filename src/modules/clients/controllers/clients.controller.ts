@@ -20,7 +20,7 @@ export class ClientsController {
     @Get('/all')
     async getClients(@Res() res) {
         const clients = await this.clientService.findAllClients();
-        return res.status(HttpStatus.OK).json({ success: true, clients: clients })
+        return res.status(HttpStatus.ACCEPTED).json({ success: true, clients: clients })
     }
 
     @Auth({
@@ -29,9 +29,9 @@ export class ClientsController {
         resource: AppResources.CLIENT,
     })
     @Post()
-    async createClient(@Body() clientDTO: ClientDTO) {
+    async createClient(@Body() clientDTO: ClientDTO, @Res() res) {
         const client = await this.clientService.addClient(clientDTO);
-        return { success: true, message: 'Client created', client };
+        return res.status(HttpStatus.CREATED).json({ success: true, message: 'Client created', client });
     }
 
     @Auth({
@@ -40,12 +40,12 @@ export class ClientsController {
         resource: AppResources.CLIENT,
     })
     @Put(':id')
-    async updateClient(@Param('id') id: number, @Body() changes: EditClientDto) {
+    async updateClient(@Param('id') id: number, @Body() changes: EditClientDto, @Res() res) {
         
         if(!id) throw new BadRequestException("Can't update user id")
         const client = await this.clientService.updateClient(id, changes)
 
-        return { success: true, message: 'Client edited', client }
+        return res.status(HttpStatus.OK).json({ success: true, message: 'Client edited', client })
     }
 
 }

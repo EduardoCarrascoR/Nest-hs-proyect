@@ -23,27 +23,32 @@ export class ClientsService {
             email,
             ...rest
         });
-
+        
         await this.clientRepository.save(client);
-
+        
         return client;
     }
-
+    
     async findAllClients(): Promise<ClientDTO[]> {
-        return this.clientRepository.find()
+        const clients = await this.clientRepository.find()
+        return clients
     }
 
     async findOneClient(id: number, clientEntity?: Client) {
         const client = await this.clientRepository.findOne(id)
         .then(c => !clientEntity ? c : !!c && clientEntity.id === c.id ? c : null)
-
-        if (!client) throw new NotFoundException('Client does not exists or unauthorized')
-
+        
+        if (!client) throw new HttpException({ success: false, status: HttpStatus.NOT_FOUND, message:'Client does not exists or unauthorized'}, HttpStatus.NOT_FOUND);
+        
         return client;
     }
+    
+    async updateClient(id: number, newValue: EditUserDto, clientEntity?: Client) {
+        const client = await this.findOneClient(id, clientEntity)
+        .then(c => !clientEntity ? c : !!c && clientEntity.id === c.id ? c : null)
+        
+        if (!client) throw new HttpException({ success: false, status: HttpStatus.NOT_FOUND, message:'Client does not exists or unauthorized'}, HttpStatus.NOT_FOUND);
 
-    async updateClient(id: number, newValue: EditUserDto, clienEntity?: Client) {
-        const client = await this.findOneClient(id, clienEntity);
         const editedClient = await Object.assign(client, newValue)
         return await this.clientRepository.save(editedClient)
     }
