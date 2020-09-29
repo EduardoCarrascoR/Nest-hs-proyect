@@ -17,7 +17,7 @@ export class ClientsService {
         const clientInDB = await this.clientRepository.findOne({
             where: { email }
         });
-        if(clientInDB) throw new HttpException('Client already exists, please verify the data', HttpStatus.BAD_REQUEST);
+        if(clientInDB) throw new HttpException({ success: false, status: HttpStatus.BAD_REQUEST, message:'Client already exists, please verify the data'}, HttpStatus.BAD_REQUEST);
         
         const client: Client = await this.clientRepository.create({
             email,
