@@ -39,7 +39,8 @@ export class UsersService {
     }
     
     async findAllUser(): Promise<UserDTO[]> {
-        return await this.userRepository.find();
+        const user = await this.userRepository.find();
+        return user;
     }
 
     async findOneUser(id: number, userEntity?: User) {

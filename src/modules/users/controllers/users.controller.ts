@@ -24,7 +24,7 @@ export class UsersController {
     @Get('/all')
     async getUsers(@Res() res) {
         const users = await this.userService.findAllUser();
-        return res.status(HttpStatus.OK).json(users);
+        return res.status(HttpStatus.OK).json({ success: true, users: users });
     }
 
     @Auth({
@@ -35,7 +35,7 @@ export class UsersController {
     @Post()
     async createUser(@Body() userdto: CreateUserDTO ) {
         const user = await this.userService.addUser(userdto);
-        return { message: 'User created', user };
+        return { success: true, message: 'User created', user };
     }
 
     @Auth({
@@ -61,7 +61,7 @@ export class UsersController {
             data = await this.userService.updateUser(id, rest, user)
         }
 
-        return { message: 'User edited', data }
+        return { success: true, message: 'User edited', data }
     }
 
 

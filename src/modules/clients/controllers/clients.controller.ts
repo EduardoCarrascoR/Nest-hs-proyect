@@ -20,7 +20,7 @@ export class ClientsController {
     @Get('/all')
     async getClients(@Res() res) {
         const clients = await this.clientService.findAllClients();
-        return res.status(HttpStatus.OK).json(clients)
+        return res.status(HttpStatus.OK).json({ success: true, clients: clients })
     }
 
     @Auth({
@@ -31,7 +31,7 @@ export class ClientsController {
     @Post()
     async createClient(@Body() clientDTO: ClientDTO) {
         const client = await this.clientService.addClient(clientDTO);
-        return { message: 'Client created', client };
+        return { success: true, message: 'Client created', client };
     }
 
     @Auth({
@@ -45,7 +45,7 @@ export class ClientsController {
         if(!id) throw new BadRequestException("Can't update user id")
         const client = await this.clientService.updateClient(id, changes)
 
-        return { message: 'Client edited', client }
+        return { success: true, message: 'Client edited', client }
     }
 
 }
