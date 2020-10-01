@@ -36,7 +36,7 @@ export class ClientsService {
 
     async findOneClient(id: number, clientEntity?: Client) {
         const client = await this.clientRepository.findOne(id)
-        .then(c => !clientEntity ? c : !!c && clientEntity.id === c.id ? c : null)
+        .then(c => !clientEntity ? c : !!c && clientEntity.clientId === c.clientId ? c : null)
         
         if (!client) throw new HttpException({ success: false, status: HttpStatus.NOT_FOUND, message:'Client does not exists or unauthorized'}, HttpStatus.NOT_FOUND);
         
@@ -45,7 +45,7 @@ export class ClientsService {
     
     async updateClient(id: number, newValue: EditUserDto, clientEntity?: Client) {
         const client = await this.findOneClient(id, clientEntity)
-        .then(c => !clientEntity ? c : !!c && clientEntity.id === c.id ? c : null)
+        .then(c => !clientEntity ? c : !!c && clientEntity.clientId === c.clientId ? c : null)
         
         if (!client) throw new HttpException({ success: false, status: HttpStatus.NOT_FOUND, message:'Client does not exists or unauthorized'}, HttpStatus.NOT_FOUND);
 

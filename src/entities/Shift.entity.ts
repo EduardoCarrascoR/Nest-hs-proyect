@@ -1,5 +1,6 @@
 import {
   Column,
+  CreateDateColumn,
   Entity,
   Index,
   JoinColumn,
@@ -13,6 +14,8 @@ import { Report } from "./Report.entity";
 import { Client } from "./Client.entity";
 import { News } from "./News.entity";
 import { User } from "./User.entity";
+import { shiftType } from "src/common/enums/shift-types.enum";
+import { shiftState } from "src/common/enums";
 
 @Index("fk_shift_news1_idx", ["newsNewsId"], {})
 @Index("fk_shift_client1_idx", ["clientClientId"], {})
@@ -21,8 +24,8 @@ export class Shift {
   @PrimaryGeneratedColumn({ type: "int", name: "shift_id" })
   shiftId: number;
 
-  @Column("varchar", { name: "type", nullable: true, length: 45 })
-  type: string | null;
+  @Column({ name: "type", type: "enum", enum: shiftType, default: shiftType.DAY })
+  type: shiftType;
 
   @Column("datetime", { name: "start", nullable: true })
   start: Date | null;
@@ -37,27 +40,28 @@ export class Shift {
   trueFinishShift: Date | null;
 
   @Column("date", { name: "date", nullable: true })
-  date: string | null;
+  date: Date | null;
 
-  @Column("varchar", { name: "state", nullable: true, length: 45 })
-  state: string | null;
+  @Column({ name: "state", type: "enum", enum: shiftState, default: shiftState.Assigned })
+  state: shiftState;
 
   @Column("int", { primary: true, name: "news_news_id" })
   newsNewsId: number;
 
   @Column("int", { primary: true, name: "client_client_id" })
   clientClientId: number;
-
+  
   @Column("varchar", { name: "shift_place", length: 200 })
   shiftPlace: string;
 
-  @OneToMany(() => Report, (report) => report.shiftShiftId2)
+  @OneToMany(() => Report, (report) => report.shiftShiftId)
   reports: Report[];
 
   @ManyToOne(() => Client, (client) => client.shifts, {
     onDelete: "RESTRICT",
     onUpdate: "RESTRICT",
   })
+  @JoinColumn([{ name: "client_client_id", referencedColumnName: "clientId" }])
   clientClient: Client;
 
   @ManyToOne(() => News, (news) => news.shifts, {

@@ -4,7 +4,7 @@ import { Shift } from "./Shift.entity";
 @Entity("client", { schema: "hs" })
 export class Client {
   @PrimaryGeneratedColumn({ type: "int", name: "client_id" })
-  id: number;
+  clientId: number;
 
   @Column("varchar", { name: "name", nullable: true, length: 45 })
   name: string | null;

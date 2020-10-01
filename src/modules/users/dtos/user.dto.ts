@@ -14,12 +14,6 @@ export class CreateUserDTO {
     @IsString() @ApiProperty()
     readonly lastname: string;
     
-    @IsEnum(AppRoles, {
-        each: true,
-        message: `must be a valid role value, ${ EnumToString(AppRoles)}`
-    }) @ApiProperty()
-    readonly roles: string[];
-    
     @ApiProperty()
     readonly phone: string;
 

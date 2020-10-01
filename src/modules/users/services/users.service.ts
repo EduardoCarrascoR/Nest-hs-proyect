@@ -4,6 +4,7 @@ import { User } from '../../../entities';
 import { Repository } from 'typeorm';
 import { UserDTO, CreateUserDTO } from '../dtos/user.DTO';
 import { EditUserDto } from '../dtos/edit-user.dto';
+import { AppRoles } from 'src/common/enums';
 
 @Injectable()
 export class UsersService {
@@ -12,7 +13,7 @@ export class UsersService {
             private readonly userRepository: Repository<User>,
     ){}
 
-    async addUser(userDTO: CreateUserDTO): Promise<UserDTO> {
+    async addAdminUser(userDTO: CreateUserDTO): Promise<UserDTO> {
         const { rut, ...rest } = userDTO;
         const rutform = await this.rutFormat(rut)
         let value = await this.dgv(rutform.cuerpo,rutform.dv)
@@ -27,6 +28,34 @@ export class UsersService {
             }
             const user: User = await this.userRepository.create({
                 rut,
+                roles: [AppRoles.Admin],
+                ...rest           
+            });
+
+            await this.userRepository.save(user)
+            const { password, ...rest2 } = user
+            return rest2;
+        } else {
+            throw new HttpException({ success: false, status: HttpStatus.BAD_REQUEST, message:'Rut not valid'}, HttpStatus.BAD_REQUEST); 
+        } 
+    }
+
+    async addGuardUser(userDTO: CreateUserDTO): Promise<UserDTO> {
+        const { rut, ...rest } = userDTO;
+        const rutform = await this.rutFormat(rut)
+        let value = await this.dgv(rutform.cuerpo,rutform.dv)
+        
+        if (value===true) {
+            const rut = rutform.cuerpo.toString().concat(rutform.dv.toString());
+            const userInDb = await this.userRepository.findOne({ 
+                where: { rut } 
+            }); 
+            if (userInDb) {
+                throw new HttpException({ success: false, status: HttpStatus.BAD_REQUEST, message:'User already exists'}, HttpStatus.BAD_REQUEST);    
+            }
+            const user: User = await this.userRepository.create({
+                rut,
+                roles: [AppRoles.Guard],
                 ...rest           
             });
 

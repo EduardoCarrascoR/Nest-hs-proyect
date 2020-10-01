@@ -2,7 +2,7 @@ import { ApiProperty } from "@nestjs/swagger";
 
 export class loginDto {
     @ApiProperty()
-    email: string;
+    rut: string;
     @ApiProperty()
     password: string;
 }

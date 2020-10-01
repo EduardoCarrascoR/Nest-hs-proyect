@@ -8,6 +8,7 @@ import { DATABASE_HOST, DATABASE_PORT, DATABASE_USER, DATABASE_PASS, DATABASE_DB
 import { roles } from './app.roles';
 import { ClientsModule } from './modules/clients/clients.module';
 import { Shift, Client, User, Report, News } from './entities'
+import { ShiftsModule } from './modules/shifts/shifts.module';
 
 @Module({
   imports: [  
@@ -33,7 +34,7 @@ import { Shift, Client, User, Report, News } from './entities'
       isGlobal: true,
       envFilePath: '.env'
     }),
-    AccessControlModule.forRoles(roles), AuthModule, UsersModule, ClientsModule, ],
+    AccessControlModule.forRoles(roles), AuthModule, UsersModule, ClientsModule, ShiftsModule, ],
   controllers: [],
   providers: [],
 })

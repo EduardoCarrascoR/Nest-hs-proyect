@@ -1,4 +1,4 @@
-import { Controller, Get, Res, HttpStatus, Param, Put, Body, BadRequestException, Post, UseGuards } from '@nestjs/common';
+import { Controller, Get, Res, HttpStatus, Param, Put, Body, BadRequestException, Post, UseGuards, HttpException } from '@nestjs/common';
 import { UsersService } from '../services/users.service';
 import { CreateUserDTO, EditUserDto } from '../dtos/';
 import { ApiTags } from '@nestjs/swagger';
@@ -35,6 +35,7 @@ export class UsersController {
     @Get('/allGuards')
     async getGuards(@Res() res) {
         const guards = await this.userService.findAllGuards();
+
         return res.status(HttpStatus.ACCEPTED).json({ success: true, guards: guards });
     }
 
@@ -44,8 +45,19 @@ export class UsersController {
         resource: AppResources.USER,
     })
     @Post()
-    async createUser(@Body() userdto: CreateUserDTO, @Res() res) {
-        const user = await this.userService.addUser(userdto);
+    async createAdminUser(@Body() userdto: CreateUserDTO, @Res() res) {
+        const user = await this.userService.addAdminUser(userdto);
+        return res.status(HttpStatus.CREATED).json({ success: true, message: 'User created', user });
+    }
+
+    @Auth({
+        possession: 'any',
+        action: 'create',
+        resource: AppResources.USER,
+    })
+    @Post('/Guard')
+    async createGuardUser(@Body() userdto: CreateUserDTO, @Res() res) {
+        const user = await this.userService.addGuardUser(userdto);
         return res.status(HttpStatus.CREATED).json({ success: true, message: 'User created', user });
     }
 
@@ -58,7 +70,7 @@ export class UsersController {
     async updateUser(@Param('id') id: number, @Body() changes: EditUserDto, @User() user: UserEntity, @Res() res) {
         
         let data;
-        if(!id) throw new BadRequestException("Can't update user id")
+        if(!id) throw new HttpException({ success: false, status: HttpStatus.BAD_REQUEST, message: "Can't update user id" }, HttpStatus.BAD_REQUEST)
         if(this.rolesBuilder
             .can(user.roles)
             .updateAny(AppResources.USER)
@@ -68,11 +80,11 @@ export class UsersController {
             data = await this.userService.updateUser(id, changes)
         } else {
             // es Guard
-            const { roles, ...rest } = changes;
+            const { ...rest } = changes;
             data = await this.userService.updateUser(id, rest, user)
         }
 
-        return res.status(HttpStatus.OK).json({ success: true, message: 'User edited', data })
+        return res.status(HttpStatus.OK).json({ success: true, message: 'User edited', user: data })
     }
 
 
