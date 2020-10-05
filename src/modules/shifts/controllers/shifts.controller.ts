@@ -36,6 +36,6 @@ export class ShiftsController {
         if(!id) throw new HttpException({ success: false, status: HttpStatus.BAD_REQUEST, message: "Can't initialized shift id" }, HttpStatus.BAD_REQUEST)
         const shift = this.shiftService.shiftFinalized(id);
         
-        return res.status(HttpStatus.OK).json({ success: true, message: 'Shift initialized', shift })
+        return res.status(HttpStatus.OK).json({ success: true, message: 'Shift finalized', shift })
     }
 }
