@@ -8,4 +8,5 @@ export enum AppRoles {
 export enum AppResources {
     USER = 'USER',
     AUTH = 'AUTH',
+    CLIENT = 'CLIENT'
 }

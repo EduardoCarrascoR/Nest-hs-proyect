@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Shift } from "./Shift.entity";
 
 @Entity("client", { schema: "hs" })
 export class Client {
@@ -16,4 +17,7 @@ export class Client {
 
   @Column("varchar", { name: "address", nullable: true, length: 45 })
   address: string | null;
+
+  @OneToMany(() => Shift, (shift) => shift.clientClient)
+  shifts: Shift[];
 }

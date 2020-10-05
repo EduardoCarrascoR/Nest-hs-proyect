@@ -5,6 +5,7 @@ import { User, Auth } from 'src/common/decorators';
 import { User as UserEntity } from 'src/entities';
 import { ApiTags } from '@nestjs/swagger';
 import { loginDto } from '../dto';
+import { AppResources } from 'src/common/enums';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -23,7 +24,11 @@ export class AuthController {
     }
   }
 
-  @Auth()
+  @Auth({
+    possession: 'own',
+    action: 'read',
+    resource: AppResources.AUTH,
+  })
   @Get('profile')
   profile(@User() user: UserEntity){
     return {

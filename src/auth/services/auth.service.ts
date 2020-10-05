@@ -12,8 +12,9 @@ export class AuthService {
   ){}
   
 
-  async validateUser(email: string, pass: string): Promise<any> {
-    const user = await this.userService.findOneUserByEmail(email);
+  async validateUser(rut: string, pass: string): Promise<any> {
+    const rutform = await this.rutFormat(rut)
+    const user = await this.userService.findOneUserByRut(rutform);
 
     if(user && bcrypt.compare(pass, user.password)){
       const { password, ...rest } = user
@@ -28,8 +29,15 @@ export class AuthService {
     const payload = { sub: id };
 
     return {
+      ...rest,
       accessToken: this.jwtService.sign(payload)
 
     }
   }
+
+  private rutFormat(rut: string) {
+    var valor = rut.replace('.','').replace('.','').replace('-','');
+
+    return valor
+}
 }

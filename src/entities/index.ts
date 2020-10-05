@@ -1,3 +1,5 @@
-import { from } from "rxjs";
-
 export * from './User.entity'
+export * from './Client.entity'
+export * from './News.entity'
+export * from './Report.entity'
+export * from './Shift.entity'

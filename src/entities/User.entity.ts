@@ -1,7 +1,17 @@
-import { Column, Entity, Index, PrimaryGeneratedColumn, BeforeInsert, BeforeUpdate, CreateDateColumn, UpdateDateColumn } from "typeorm";
+import {
+  BeforeInsert,
+  BeforeUpdate,
+  Column,
+  CreateDateColumn,
+  Entity,
+  Index,
+  ManyToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from "typeorm";
 import * as bcrypt from "bcrypt";
+import { Shift } from "./Shift.entity";
 
-@Index("rut_UNIQUE", ["rut"], { unique: true })
 @Entity("user", { schema: "hs" })
 export class User {
   @PrimaryGeneratedColumn({ type: "int", name: "user_id" })
@@ -9,7 +19,7 @@ export class User {
 
   @Column("varchar", { name: "firstname", nullable: true, length: 45 })
   firstname: string | null;
-
+  
   @Column("varchar", { name: "lastname", nullable: true, length: 45 })
   lastname: string | null;
 
@@ -18,7 +28,7 @@ export class User {
 
   @Column("varchar", { name: "rut", unique: true, length: 11 })
   rut: string;
-  
+
   @Column("varchar", { name: "phone", nullable: true, length: 45 })
   phone: string | null;
 
@@ -28,14 +38,17 @@ export class User {
   @Column("varchar", { name: "email_verified", nullable: true, length: 45 })
   emailVerified: string | null;
 
-  @Column("varchar", { name: "password", length: 200, select: false }) // Putear a wochi XDDD
+  @Column("varchar", { name: "password", length: 200, select: false })
   password: string;
 
   @CreateDateColumn()
   createdAt: Date;
-  
+
   @UpdateDateColumn()
-    updatedAt: Date;
+  updatedAt: Date;
+
+  @ManyToMany(() => Shift, (shift) => shift.users)
+  shifts: Shift[];
 
   @BeforeInsert()
   @BeforeUpdate()

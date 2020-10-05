@@ -1,10 +1,9 @@
-import { Controller, Get, Res, HttpStatus, Param, Put, Body, BadRequestException, Post, UseGuards } from '@nestjs/common';
+import { Controller, Get, Res, HttpStatus, Param, Put, Body, BadRequestException, Post, UseGuards, HttpException } from '@nestjs/common';
 import { UsersService } from '../services/users.service';
-import { CreateUserDTO } from '../dtos/user.DTO';
+import { CreateUserDTO, EditUserDto } from '../dtos/';
 import { ApiTags } from '@nestjs/swagger';
 import { Auth, User } from 'src/common/decorators';
-import { EditUserDto } from '../dtos/edit-user.dto';
-import { ACGuard, UseRoles, InjectRolesBuilder, RolesBuilder } from 'nest-access-control';
+import { InjectRolesBuilder, RolesBuilder } from 'nest-access-control';
 import { AppResources } from 'src/common/enums';
 import { User as UserEntity} from 'src/entities';
 
@@ -15,17 +14,29 @@ export class UsersController {
         private readonly userService: UsersService,
         @InjectRolesBuilder()
         private readonly rolesBuilder: RolesBuilder
-    ){}
+    ) {}
 
     @Auth({
         possession: 'any',
-        action: 'create',
+        action: 'read',
         resource: AppResources.USER,
     })
     @Get('/all')
     async getUsers(@Res() res) {
-        const users = await this.userService.findAllUser();
-        return res.status(HttpStatus.OK).json(users)
+        const users = await this.userService.findAllUsers();
+        return res.status(HttpStatus.ACCEPTED).json({ success: true, users: users });
+    }
+
+    @Auth({
+        possession: 'any',
+        action: 'read',
+        resource: AppResources.USER,
+    })
+    @Get('/allGuards')
+    async getGuards(@Res() res) {
+        const guards = await this.userService.findAllGuards();
+
+        return res.status(HttpStatus.ACCEPTED).json({ success: true, guards: guards });
     }
 
     @Auth({
@@ -34,9 +45,20 @@ export class UsersController {
         resource: AppResources.USER,
     })
     @Post()
-    async createUser(@Body() userdto: CreateUserDTO ) {
-        const user = await this.userService.addUser(userdto);
-        return { message: 'User created', user };
+    async createAdminUser(@Body() userdto: CreateUserDTO, @Res() res) {
+        const user = await this.userService.addAdminUser(userdto);
+        return res.status(HttpStatus.CREATED).json({ success: true, message: 'User created', user });
+    }
+
+    @Auth({
+        possession: 'any',
+        action: 'create',
+        resource: AppResources.USER,
+    })
+    @Post('/Guard')
+    async createGuardUser(@Body() userdto: CreateUserDTO, @Res() res) {
+        const user = await this.userService.addGuardUser(userdto);
+        return res.status(HttpStatus.CREATED).json({ success: true, message: 'User created', user });
     }
 
     @Auth({
@@ -45,10 +67,10 @@ export class UsersController {
         resource: AppResources.USER,
     })
     @Put(':id')
-    async updateUser(@Param('id') id: number, @Body() changes: EditUserDto, @User() user: UserEntity) {
+    async updateUser(@Param('id') id: number, @Body() changes: EditUserDto, @User() user: UserEntity, @Res() res) {
         
         let data;
-        if(!id) throw new BadRequestException("Can't update user id")
+        if(!id) throw new HttpException({ success: false, status: HttpStatus.BAD_REQUEST, message: "Can't update user id" }, HttpStatus.BAD_REQUEST)
         if(this.rolesBuilder
             .can(user.roles)
             .updateAny(AppResources.USER)
@@ -58,11 +80,11 @@ export class UsersController {
             data = await this.userService.updateUser(id, changes)
         } else {
             // es Guard
-            const { roles, ...rest } = changes;
+            const { ...rest } = changes;
             data = await this.userService.updateUser(id, rest, user)
         }
 
-        return { message: 'User edited', data}
+        return res.status(HttpStatus.OK).json({ success: true, message: 'User edited', user: data })
     }
 
 
