@@ -1,6 +1,6 @@
 import { Controller, Get, Res, HttpStatus, Param, Put, Body, BadRequestException, Post, UseGuards, HttpException } from '@nestjs/common';
 import { UsersService } from '../services/users.service';
-import { CreateUserDTO, EditUserDto } from '../dtos/';
+import { CreateUserDTO, EditUserDto } from '../dtos';
 import { ApiTags } from '@nestjs/swagger';
 import { Auth, User } from 'src/common/decorators';
 import { InjectRolesBuilder, RolesBuilder } from 'nest-access-control';

@@ -2,8 +2,7 @@ import { Injectable, forwardRef, Inject, HttpException, HttpStatus, NotFoundExce
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from '../../../entities';
 import { Repository } from 'typeorm';
-import { UserDTO, CreateUserDTO } from '../dtos/user.DTO';
-import { EditUserDto } from '../dtos/edit-user.dto';
+import { UserDTO, CreateUserDTO, EditUserDto } from '../dtos';
 import { AppRoles } from 'src/common/enums';
 
 @Injectable()

@@ -27,10 +27,6 @@ export class CreateUserDTO {
 export class UserDTO {
     readonly firstname: string;
     readonly lastname: string;
-    @IsEnum(AppRoles, {
-        each: true,
-        message: `must be a valid role value, ${ EnumToString(AppRoles) }`
-    })
     readonly roles: string[];
     readonly rut: string;
     readonly phone: string;
