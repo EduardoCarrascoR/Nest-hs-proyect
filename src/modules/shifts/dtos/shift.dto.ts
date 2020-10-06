@@ -2,7 +2,7 @@ import { IsDate, IsEnum, IsNumber, IsString } from "class-validator";
 import { shiftState } from "src/common/enums";
 import { shiftType } from "src/common/enums/shift-types.enum";
 import { EnumToString } from "src/common/helpers/enumToString";
-import { UserDTO } from "src/modules/users/dtos";
+import { UserDTO } from "src/modules/users/dtos/user.dto";
 
 
 export class CreateShiftDTO {

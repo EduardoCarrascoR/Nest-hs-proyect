@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Client } from 'src/entities/';
-import { EditUserDto } from 'src/modules/users/dtos';
+import { EditUserDto } from 'src/modules/users/dtos/edit-user.dto';
 import { Repository } from 'typeorm';
 import { ClientDTO } from '../dtos/client.dto';
 
