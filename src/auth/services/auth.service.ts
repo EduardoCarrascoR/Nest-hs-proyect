@@ -1,8 +1,8 @@
-import { Injectable, forwardRef, Inject, InternalServerErrorException } from '@nestjs/common';
-import { User } from 'src/entities';
-import { UsersService } from 'src/modules/users/services/users.service';
+import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from "bcrypt";
+import { UsersService } from '../../modules/users/services/users.service';
+import { User } from '../../entities';
 
 @Injectable()
 export class AuthService {
@@ -13,8 +13,7 @@ export class AuthService {
   
 
   async validateUser(rut: string, pass: string): Promise<any> {
-    const rutform = await this.rutFormat(rut)
-    const user = await this.userService.findOneUserByRut(rutform);
+    const user = await this.userService.findOneUserByRut(rut);
 
     if(user && bcrypt.compare(pass, user.password)){
       const { password, ...rest } = user
@@ -35,9 +34,4 @@ export class AuthService {
     }
   }
 
-  private rutFormat(rut: string) {
-    var valor = rut.replace('.','').replace('.','').replace('-','');
-
-    return valor
-}
 }

@@ -1,6 +1,5 @@
 import {
   Column,
-  CreateDateColumn,
   Entity,
   Index,
   JoinColumn,
@@ -14,11 +13,9 @@ import { Report } from "./Report.entity";
 import { Client } from "./Client.entity";
 import { News } from "./News.entity";
 import { User } from "./User.entity";
-import { shiftType } from "src/common/enums/shift-types.enum";
-import { shiftState } from "src/common/enums";
+import { shiftType, shiftState } from "../common/enums";
 
-@Index("fk_shift_news1_idx", ["newsNewsId"], {})
-@Index("fk_shift_client1_idx", ["clientClientId"], {})
+@Index("fk_shift_client1_idx", ["client"], {})
 @Entity("shift", { schema: "hs" })
 export class Shift {
   @PrimaryGeneratedColumn({ type: "int", name: "shift_id" })
@@ -27,29 +24,29 @@ export class Shift {
   @Column({ name: "type", type: "enum", enum: shiftType, default: shiftType.DAY })
   type: shiftType;
 
-  @Column("datetime", { name: "start", nullable: true })
-  start: Date | null;
+  @Column({ name: "start", type: "time", nullable: true })
+  start: string | null;
 
   @Column("datetime", { name: "true_start_shift", nullable: true })
   trueStartShift: Date | null;
 
-  @Column("datetime", { name: "finish", nullable: true })
-  finish: Date | null;
+  @Column({ name: "finish", type: "time", nullable: true })
+  finish: string | null;
 
   @Column("datetime", { name: "true_finish_shift", nullable: true })
   trueFinishShift: Date | null;
 
-  @Column("date", { name: "date", nullable: true })
+  @Column({ name: "date", type: "date", nullable: true })
   date: Date | null;
 
   @Column({ name: "state", type: "enum", enum: shiftState, default: shiftState.Assigned })
   state: shiftState;
 
-  @Column("int", { primary: true, name: "news_news_id" })
+  @Column({ name: "news_news_id", type: "int", nullable: true })
   newsNewsId: number;
 
   @Column("int", { primary: true, name: "client_client_id" })
-  clientClientId: number;
+  client: number;
   
   @Column("varchar", { name: "shift_place", length: 200 })
   shiftPlace: string;
@@ -73,5 +70,5 @@ export class Shift {
 
   @ManyToMany(() => User, (user) => user.shifts)
   @JoinTable()
-  users: User[];
+  guards: User[];
 }

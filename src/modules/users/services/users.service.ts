@@ -1,9 +1,9 @@
 import { Injectable, forwardRef, Inject, HttpException, HttpStatus, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from "@nestjs/typeorm";
-import { User } from '../../../entities';
 import { Repository } from 'typeorm';
+import { User } from '../../../entities';
 import { UserDTO, CreateUserDTO, EditUserDto } from '../dtos';
-import { AppRoles } from 'src/common/enums';
+import { AppRoles } from '../../../common/enums';
 
 @Injectable()
 export class UsersService {
@@ -14,11 +14,10 @@ export class UsersService {
 
     async addAdminUser(userDTO: CreateUserDTO): Promise<UserDTO> {
         const { rut, ...rest } = userDTO;
-        const rutform = await this.rutFormat(rut)
-        let value = await this.dgv(rutform.cuerpo,rutform.dv)
+        let rutformat = await this.rutformat(rut)
+        let value = await this.dgv(rutformat)
         
         if (value===true) {
-            const rut = rutform.cuerpo.toString().concat(rutform.dv.toString());
             const userInDb = await this.userRepository.findOne({ 
                 where: { rut } 
             }); 
@@ -41,11 +40,10 @@ export class UsersService {
 
     async addGuardUser(userDTO: CreateUserDTO): Promise<UserDTO> {
         const { rut, ...rest } = userDTO;
-        const rutform = await this.rutFormat(rut)
-        let value = await this.dgv(rutform.cuerpo,rutform.dv)
+        let rutformat = await this.rutformat(rut)
+        let value = await this.dgv(rutformat)
         
         if (value===true) {
-            const rut = rutform.cuerpo.toString().concat(rutform.dv.toString());
             const userInDb = await this.userRepository.findOne({ 
                 where: { rut } 
             }); 
@@ -110,33 +108,30 @@ export class UsersService {
         return await this.userRepository.save(editedUser);
     }
 
-    private dgv(rut: number, dv: string){  
-        var M=0,S=1;
-        for(;rut;rut=Math.floor(rut/10)){
-        S=(S+rut%10*(9-M++%6))%11;}
-        //return S?S-1:'k';
-        S=S-1
-        switch (S) {
-          case 11:
-              if(dv===(S.toString())){return true}else{return false}
-              break;
-          case 0:
-              let s='K'
-              if(dv===(s)){return true}else{return false}
-              break;    
-          default:
-              if(dv===(S.toString())){return true}else{return false}
-              break;
-        }
+    private rutformat(rut:string){
+        
+        // Despejar Puntos
+        let valor = rut.replace('.','').replace('.','');
+        return valor;
     }
 
-    private rutFormat(rut: string) {
-        var valor = rut.replace('.','').replace('.','').replace('-','');
+    private dgv(rut: string){  
+        
+        // Valida el rut con su cadena completa "XXXXXXXX-X"
+        if (!/^[0-9]+[-|‐]{1}[0-9kK]{1}$/.test( rut ))
+                return false;
+            var tmp 	= rut.split('-');
+            var digv	= tmp[1]; 
+            var rut 	= tmp[0];
+            if ( digv == 'K' ) digv = 'k' ;
+            return (this.dv(rut) == digv );
 
-        // Aislar Cuerpo y Dígito Verificador
-        let cuerpo = Number(valor.slice(0,-1));
-        let dv = valor.slice(-1).toUpperCase();
+    }
 
-        return { cuerpo, dv }
+    private dv(T) {
+        var M=0,S=1;
+            for(;T;T=Math.floor(T/10))
+                S=(S+T%10*(9-M++%6))%11;
+            return S?S-1:'k';
     }
 }

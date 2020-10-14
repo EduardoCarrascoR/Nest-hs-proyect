@@ -1,14 +1,14 @@
-import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from "@nestjs/config";
+import { AccessControlModule } from "nest-access-control";
+import { DATABASE_HOST, DATABASE_PORT, DATABASE_USER, DATABASE_PASS, DATABASE_DB } from './config/constants';
 import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './auth/auth.module';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { AccessControlModule } from "nest-access-control";
-import { ConfigModule, ConfigService } from "@nestjs/config";
-import { DATABASE_HOST, DATABASE_PORT, DATABASE_USER, DATABASE_PASS, DATABASE_DB } from './config/constants';
-import { roles } from './app.roles';
 import { ClientsModule } from './modules/clients/clients.module';
-import { Shift, Client, User, Report, News } from './entities'
 import { ShiftsModule } from './modules/shifts/shifts.module';
+import { Shift, Client, User, Report, News } from './entities'
+import { roles } from './app.roles';
 
 @Module({
   imports: [  

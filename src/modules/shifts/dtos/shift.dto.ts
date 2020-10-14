@@ -1,8 +1,8 @@
-import { IsDate, IsEnum, IsNumber, IsString } from "class-validator";
-import { shiftState } from "src/common/enums";
-import { shiftType } from "src/common/enums/shift-types.enum";
-import { EnumToString } from "src/common/helpers/enumToString";
-import { UserDTO } from "src/modules/users/dtos/user.dto";
+import { IsDate, IsEnum, IsISO8601, IsMilitaryTime, IsNumber, IsString, NotContains } from "class-validator";
+import { shiftState } from "../../../common/enums";
+import { shiftType } from "../../../common/enums/shift-types.enum";
+import { EnumToString } from "../../../common/helpers/enumToString";
+import { UserDTO } from "../../users/dtos";
 
 
 export class CreateShiftDTO {
@@ -12,40 +12,44 @@ export class CreateShiftDTO {
     })
     readonly type: shiftType;
 
-    @IsDate()
-    readonly start: Date;
+    @IsMilitaryTime()
+    readonly start: string;
 
-    @IsDate()
-    readonly finish: Date;
+    @IsMilitaryTime()
+    readonly finish: string;
 
-    @IsDate()
+    @IsISO8601()
     readonly date: Date;
 
     @IsNumber()
-    readonly clientClientId: number;
+    readonly client: number;
+
+    readonly state: shiftState;
     
-    readonly guards: UserDTO[]
+    readonly guards?: UserDTO[]
     
     @IsString()
-    readonly shift_place: string;
+    readonly shiftPlace: string;
 }
 
 export class ShiftDTO {
     
     @IsEnum(shiftType,{ 
-        message: `must be a valid role value, ${ EnumToString(shiftType) }`
+        message: `must be a valid type value, ${ EnumToString(shiftType) }`
     })
     readonly type: shiftType;
-    @IsDate()
-    readonly start: Date;
-    @IsDate()
-    readonly finish: Date;
-    @IsDate()
+    @IsMilitaryTime()
+    readonly start: string;
+    @IsMilitaryTime()
+    readonly finish?: string;
+    @IsISO8601()
     readonly date: Date;
     readonly shiftPlace: string;
     @IsEnum(shiftState,{ 
-        message: `must be a valid role value, ${ EnumToString(shiftState) }`
+        message: `must be a valid state value, ${ EnumToString(shiftState) }`
     })
     readonly state: shiftState;
+    
+    readonly guards?: UserDTO[]
 
 }

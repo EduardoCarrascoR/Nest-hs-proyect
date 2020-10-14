@@ -1,10 +1,9 @@
-import { NestFactory, APP_FILTER } from '@nestjs/core';
-import { AppModule } from './app.module';
-import "dotenv/config";
+import { NestFactory } from '@nestjs/core';
 import { Logger, ValidationPipe } from '@nestjs/common';
-import { initSwagger } from './app.swagger';
-import { PORT } from './config/constants';
 import { ConfigService } from '@nestjs/config';
+import { initSwagger } from './app.swagger';
+import { AppModule } from './app.module';
+import { PORT } from './config/constants';
 import { setDefaultUser } from './config/default-user';
 
 async function bootstrap() {

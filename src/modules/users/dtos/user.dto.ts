@@ -1,7 +1,6 @@
-import { IsNotEmpty, IsEmail, IsString, MinLength, MaxLength, IsNumber, IsPhoneNumber, IsEnum, IsOptional } from 'class-validator';
-import { AppRoles } from '../../../common/enums'
+import { IsEmail, IsString, MinLength, MaxLength, IsEnum, IsOptional, ArrayNotContains } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { EnumToString } from 'src/common/helpers/enumToString';
+import { AppRoles } from '../../../common/enums'
 
 export class CreateUserDTO {
 
@@ -16,6 +15,15 @@ export class CreateUserDTO {
     
     @ApiProperty()
     readonly phone: string;
+
+    @IsOptional()
+    @IsEnum(AppRoles,{ 
+        message: `illegal value`
+    })
+    @ArrayNotContains(['Admin', 'Guard'],{ 
+        message: `role parameter is not allowed`
+    })
+    readonly roles: AppRoles[];
 
     @IsOptional() @IsEmail() @ApiProperty()
     readonly email?: string;

@@ -1,8 +1,8 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { shiftState } from 'src/common/enums';
-import { Shift } from 'src/entities';
 import { Repository } from 'typeorm';
+import { shiftState } from '../../../common/enums';
+import { Shift } from '../../../entities';
 import { CreateShiftDTO, ShiftDTO } from '../dtos/shift.dto';
 
 @Injectable()
@@ -13,17 +13,19 @@ export class ShiftsService {
     ) {}
 
     async findAllShift(): Promise<ShiftDTO[]> {
-        const shifts = await this.shiftRepository.find()
+        const shifts = await this.shiftRepository.find({ relations: ["guards"] })
         return shifts;
     }
 
     async addShift( shiftDTO: CreateShiftDTO) {
         const { guards, ...rest } = shiftDTO
-        const shiftUser = await this.shiftRepository.create({
-            users: guards,
+        const shift: Shift = await this.shiftRepository.create({
+            guards: guards,
             ...rest
             
         })
+        await this.shiftRepository.save(shift)
+        return shift;
     }
 
     async shiftInicialized(id: number, shiftEntity?: Shift) {
@@ -38,20 +40,14 @@ export class ShiftsService {
     }
 
     async shiftFinalized(shiftId: number, shiftEntity?: Shift) {
-        console.log(shiftState.Finalized, this.statusChange)
         const shift = await this.shiftRepository.findOne({shiftId})
         .then(s => !shiftEntity ? s : !!s && shiftEntity.shiftId === s.shiftId ? s : null)
-        .catch( s => s = null)
         
-        await console.log(shift, shiftState.Finalized,await this.statusChange())
-        if (!shift) throw new HttpException({ success: false, status: HttpStatus.NOT_FOUND, message: 'User does not exists or unauthorized'}, HttpStatus.NOT_FOUND)
-        /*if(!shift) throw new HttpException({ success: false, status: HttpStatus.NOT_FOUND, message: 'Shift does not exists or unauthorized'},HttpStatus.NOT_FOUND)
+        if (!shift) throw new HttpException({ success: false, status: HttpStatus.NOT_FOUND, message: 'Shift does not exists or unauthorized'}, HttpStatus.NOT_FOUND)
         
-        const editedShift = await Object.assign(shift, { state: shiftState.Initialized, start: this.statusChange })
-        */
-        let date = new Date().getTime()
-        console.log(date)
-        return {status: 'funciono'}/* await this.shiftRepository.save(editedShift) */;
+        const editedShift = await Object.assign(shift, { state: shiftState.Finalized })
+
+        return await this.shiftRepository.save(editedShift);
     }
 
     async statusChange() {
