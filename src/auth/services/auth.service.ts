@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from "bcrypt";
 import { UsersService } from '../../modules/users/services/users.service';
 import { User } from '../../entities';
+import { authenticate } from 'passport';
 
 @Injectable()
 export class AuthService {
@@ -16,8 +17,10 @@ export class AuthService {
     const user = await this.userService.findOneUserByRut(rut);
 
     if(user && bcrypt.compare(pass, user.password)){
-      const { password, ...rest } = user
-      return rest;
+      const { password, roles, ...rest } = user
+      if(roles.includes('Admin')) return rest;
+      else throw new HttpException({ success: false, status: HttpStatus.UNAUTHORIZED, message: "User doesn't authorized"},HttpStatus.UNAUTHORIZED);
+      
     }
 
     return null
