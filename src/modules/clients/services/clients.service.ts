@@ -1,8 +1,8 @@
-import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Client } from 'src/entities/';
-import { EditUserDto } from 'src/modules/users/dtos/edit-user.dto';
 import { Repository } from 'typeorm';
+import { Client } from '../../../entities';
+import { EditUserDto } from '../../users/dtos';
 import { ClientDTO } from '../dtos/client.dto';
 
 @Injectable()

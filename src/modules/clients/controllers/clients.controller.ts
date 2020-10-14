@@ -1,7 +1,7 @@
 import { BadRequestException, Body, Controller, Get, HttpStatus, Param, Post, Put, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { Auth } from 'src/common/decorators';
-import { AppResources } from 'src/common/enums';
+import { Auth } from '../../../common/decorators';
+import { AppResources } from '../../../common/enums';
 import { ClientDTO, EditClientDto } from '../dtos/';
 import { ClientsService } from '../services/clients.service';
 

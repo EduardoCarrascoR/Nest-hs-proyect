@@ -18,6 +18,6 @@ export class Client {
   @Column("varchar", { name: "address", nullable: true, length: 45 })
   address: string | null;
 
-  @OneToMany(() => Shift, (shift) => shift.clientClient)
+  @OneToMany(() => Shift, (shift) => shift.client)
   shifts: Shift[];
 }

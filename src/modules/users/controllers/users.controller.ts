@@ -1,11 +1,11 @@
-import { Controller, Get, Res, HttpStatus, Param, Put, Body, BadRequestException, Post, UseGuards, HttpException } from '@nestjs/common';
+import { Controller, Get, Res, HttpStatus, Param, Put, Body, Post, HttpException } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
+import { InjectRolesBuilder, RolesBuilder } from 'nest-access-control';
 import { UsersService } from '../services/users.service';
 import { CreateUserDTO, EditUserDto } from '../dtos';
-import { ApiTags } from '@nestjs/swagger';
-import { Auth, User } from 'src/common/decorators';
-import { InjectRolesBuilder, RolesBuilder } from 'nest-access-control';
-import { AppResources } from 'src/common/enums';
-import { User as UserEntity} from 'src/entities';
+import { Auth, User } from '../../../common/decorators';
+import { AppResources } from '../../../common/enums';
+import { User as UserEntity} from '../../../entities';
 
 @ApiTags('Users')
 @Controller('users')
@@ -24,6 +24,7 @@ export class UsersController {
     @Get('/all')
     async getUsers(@Res() res) {
         const users = await this.userService.findAllUsers();
+        if(users.length == 0) throw new HttpException({ success: false, status: HttpStatus.NOT_FOUND, message: "Users not found" }, HttpStatus.NOT_FOUND)
         return res.status(HttpStatus.ACCEPTED).json({ success: true, users: users });
     }
 
@@ -35,7 +36,7 @@ export class UsersController {
     @Get('/allGuards')
     async getGuards(@Res() res) {
         const guards = await this.userService.findAllGuards();
-
+        if(guards.length == 0) throw new HttpException({ success: false, status: HttpStatus.NOT_FOUND, message: "Guards not found" }, HttpStatus.NOT_FOUND)
         return res.status(HttpStatus.ACCEPTED).json({ success: true, guards: guards });
     }
 

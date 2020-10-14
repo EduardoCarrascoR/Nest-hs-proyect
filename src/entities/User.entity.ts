@@ -23,10 +23,10 @@ export class User {
   @Column("varchar", { name: "lastname", nullable: true, length: 45 })
   lastname: string | null;
 
-  @Column({ type: 'simple-array'})
+  @Column({ name: "roles", type: 'simple-array'})
   roles: string[];
 
-  @Column("varchar", { name: "rut", unique: true, length: 11 })
+  @Column("varchar", { name: "rut", unique: true, length: 13 })
   rut: string;
 
   @Column("varchar", { name: "phone", nullable: true, length: 45 })
@@ -47,7 +47,7 @@ export class User {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @ManyToMany(() => Shift, (shift) => shift.users)
+  @ManyToMany(() => Shift, (shift) => shift.guards)
   shifts: Shift[];
 
   @BeforeInsert()
