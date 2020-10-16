@@ -1,15 +1,18 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { UserDTO } from 'src/modules/users/dtos';
+import { UsersService } from 'src/modules/users/services/users.service';
+import { getConnection, Repository } from 'typeorm';
 import { shiftState } from '../../../common/enums';
-import { Shift } from '../../../entities';
+import { Shift, User } from '../../../entities';
 import { CreateShiftDTO, ShiftDTO } from '../dtos/shift.dto';
 
 @Injectable()
 export class ShiftsService {
     constructor(
         @InjectRepository(Shift)
-            private readonly shiftRepository: Repository<Shift>
+            private readonly shiftRepository: Repository<Shift>,
+            private readonly userService: UsersService
     ) {}
 
     async findAllShift(): Promise<ShiftDTO[]> {
@@ -18,14 +21,42 @@ export class ShiftsService {
     }
 
     async addShift( shiftDTO: CreateShiftDTO) {
-        const { guards, ...rest } = shiftDTO
-        const shift: Shift = await this.shiftRepository.create({
-            guards: guards,
-            ...rest
-            
-        })
-        await this.shiftRepository.save(shift)
-        return shift;
+        const { guardsIds, dates, ...rest } = shiftDTO
+        let guards: UserDTO[];
+        const daterepeated = dates.every( (valor, indice, lista) => {return (lista.indexOf(valor) === indice);})
+        if(daterepeated !== false){
+            await getConnection().transaction(async transaction => {
+                let valueDates:boolean[] = []
+                guards = await this.userService.findAllGuardsById(guardsIds)
+                for await (const element of dates) {
+                    const shiftDB = await transaction.findOne(Shift,{ 
+                        where: { start: rest.start, finish: rest.finish, type: rest.type, date: element}
+                    })
+                    if(shiftDB === undefined) valueDates.push(false);
+                    if(shiftDB !== undefined) valueDates.push(true);
+    
+                }
+                let value = await valueDates.every((element) => { return element !== true })
+                if(!value) throw new HttpException({ success: false, status: HttpStatus.CONFLICT, message: 'Some of the shift exist or you are not authorized'},HttpStatus.CONFLICT)
+    
+                for await (const element of dates) {
+                    console.log('creando shifts')
+                    const shift: Shift = await transaction.create(Shift,{ 
+                        ...rest,
+                        guards,
+                        date: element
+                    })
+                    await transaction.save(shift)
+                    console.log(shift)
+                }
+                if(!value) throw new HttpException({ success: false, status: HttpStatus.CONFLICT, message: 'Some of the shift duplicado exist or you are not authorized'},HttpStatus.CONFLICT)
+    
+            })
+        } else {
+            throw new HttpException({ success: false, status: HttpStatus.BAD_REQUEST, message: 'Some  of the repeated dates or you are not authorized'},HttpStatus.BAD_REQUEST)
+        }
+        
+        return true;
     }
 
     async shiftInicialized(id: number, shiftEntity?: Shift) {

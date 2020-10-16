@@ -18,15 +18,14 @@ export class CreateShiftDTO {
     @IsMilitaryTime()
     readonly finish: string;
 
-    @IsISO8601()
-    readonly date: Date;
+    @IsISO8601({},{ each: true})
+    readonly dates: Date[];
 
     @IsNumber()
     readonly client: number;
 
-    readonly state: shiftState;
-    
-    readonly guards?: UserDTO[]
+    @IsNumber({},{ each: true})
+    readonly guardsIds?: number[]
     
     @IsString()
     readonly shiftPlace: string;

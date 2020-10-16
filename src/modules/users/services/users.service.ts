@@ -77,6 +77,16 @@ export class UsersService {
         return user;
     }
 
+    async findAllGuardsById( ids: number[]): Promise<UserDTO[]> {
+        const user = await this.userRepository
+        .createQueryBuilder('user')
+        .where("user.user_id IN (:...ids)", { ids: ids })
+        .orderBy("user.user_id")
+        .getMany();
+        
+        return user;
+    }
+
     async findOneUser(id: number, userEntity?: User) {
         const user = await this.userRepository.findOne(id)
         .then(u => !userEntity ? u : !!u && userEntity.id === u.id ? u : null)

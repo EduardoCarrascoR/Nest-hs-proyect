@@ -17,9 +17,9 @@ export class ShiftsController {
     })
     @Post()
     async createShift(@Body() shiftDTO: CreateShiftDTO, @Res() res) {
-        const shift = await this.shiftService.addShift(shiftDTO);
+        const success = await this.shiftService.addShift(shiftDTO);
 
-        return await res.status(HttpStatus.CREATED).json({ success: true, message: 'Shift created', shift })
+        return await res.status(HttpStatus.CREATED).json({ success: success, message: 'Shift created' })
     }
 
     @Auth({
