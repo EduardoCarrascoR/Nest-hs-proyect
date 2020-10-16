@@ -8,7 +8,6 @@ roles
     .grant(AppRoles.Guard)
     .updateOwn(AppResources.USER)
     .readOwn([AppResources.AUTH])
-    .createOwn([AppResources.SHIFT])
     .updateOwn([AppResources.SHIFT])
     .readOwn([AppResources.SHIFT])
     // ADMIN ROLES

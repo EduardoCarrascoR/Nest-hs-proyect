@@ -1,3 +1,4 @@
+import { ApiProperty } from "@nestjs/swagger";
 import { IsDate, IsEnum, IsISO8601, IsMilitaryTime, IsNumber, IsString, NotContains } from "class-validator";
 import { shiftState } from "../../../common/enums";
 import { shiftType } from "../../../common/enums/shift-types.enum";
@@ -10,31 +11,38 @@ export class CreateShiftDTO {
     @IsEnum(shiftType,{ 
         message: `must be a valid role value, ${ EnumToString(shiftType) }`
     })
+    @ApiProperty()
     readonly type: shiftType;
 
     @IsMilitaryTime()
+    @ApiProperty()
     readonly start: string;
 
     @IsMilitaryTime()
+    @ApiProperty()
     readonly finish: string;
 
     @IsISO8601({},{ each: true})
+    @ApiProperty()
     readonly dates: Date[];
 
     @IsNumber()
+    @ApiProperty()
     readonly client: number;
 
-    @IsNumber({},{ each: true})
+    @IsNumber({},{ each: true, message: `Must be a valid array of Ids value`})
+    @ApiProperty()
     readonly guardsIds?: number[]
     
     @IsString()
+    @ApiProperty()
     readonly shiftPlace: string;
 }
 
 export class ShiftDTO {
     
     @IsEnum(shiftType,{ 
-        message: `must be a valid type value, ${ EnumToString(shiftType) }`
+        message: `Must be a valid type value, ${ EnumToString(shiftType) }`
     })
     readonly type: shiftType;
     @IsMilitaryTime()

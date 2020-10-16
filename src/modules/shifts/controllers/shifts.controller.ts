@@ -1,9 +1,11 @@
 import { Body, Controller, Get, HttpException, HttpStatus, Param, Post, Put, Res } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { Auth } from '../../../common/decorators';
 import { AppResources } from '../../../common/enums';
 import { CreateShiftDTO, ShiftDTO } from '../dtos/shift.dto';
 import { ShiftsService } from '../services/shifts.service';
 
+@ApiTags('Shifts')
 @Controller('shifts')
 export class ShiftsController {
     constructor(
