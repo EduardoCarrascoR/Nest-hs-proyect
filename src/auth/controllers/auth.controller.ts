@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards, Get } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Get, Res, HttpStatus } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { AuthService } from '../services/auth.service';
 import { localAuthGuard, JwtAuthGuard } from '../../guards';
@@ -17,22 +17,16 @@ export class AuthController {
 
   @UseGuards(localAuthGuard)
   @Post('/login')
-  async loginWeb(@Body() loginDto: loginDto, @User() user: UserEntity){
+  async loginWeb(@Body() loginDto: loginDto, @User() user: UserEntity, @Res() res){
     const data =  await this.authService.login(user)
-    return {
-      message: 'Login sucess',
-      data
-    }
+    return res.status(HttpStatus.ACCEPTED).json({ success: true, message: 'Login sucess', data })
   }
 
   @UseGuards(guardAuthGuard)
   @Post('/loginApp')
-  async loginApp(@Body() loginDto: loginDto, @User() user: UserEntity){
+  async loginApp(@Body() loginDto: loginDto, @User() user: UserEntity, @Res() res){
     const data =  await this.authService.loginGuard(user)
-    return {
-      message: 'Login sucess',
-      data
-    }
+    return res.status(HttpStatus.ACCEPTED).json({ success: true, message: 'Login sucess', data })
   }
 
   @Auth({
@@ -41,21 +35,15 @@ export class AuthController {
     resource: AppResources.AUTH,
   })
   @Get('profile')
-  profile(@User() user: UserEntity){
-    return {
-      message: 'Peticion correcta',
-      user
-    }
+  profile(@User() user: UserEntity, @Res() res){
+    return res.status(HttpStatus.OK).json({ success: true, message: 'Peticion correcta', user })
   }
 
   @Auth()
   @Get('/refresh')
-  async refreshToken(@User() user: UserEntity){
+  async refreshToken(@User() user: UserEntity, @Res() res){
     const data =  await this.authService.login(user)
-    return {
-      message: 'Fefresh sucess',
-      data
-    }
+    return res.status(HttpStatus.ACCEPTED).json({ success: true, message: 'Fefresh sucess', data })
   }
 
 
