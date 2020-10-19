@@ -7,6 +7,7 @@ import { AuthService } from './services/auth.service';
 import { UsersModule } from '../modules/users/users.module';
 import { localStrategy, JwtStrategy } from './strategies';
 import { JWT_SECRET } from "../config/constants";
+import { GuardStrategy } from './strategies/guards.strategy';
 
 @Module({
   imports: [ PassportModule, 
@@ -18,7 +19,7 @@ import { JWT_SECRET } from "../config/constants";
       })
     }),
      UsersModule ],
-  providers: [AuthService, localStrategy, JwtStrategy],
+  providers: [AuthService, localStrategy, JwtStrategy, GuardStrategy],
   controllers: [AuthController],
 })
 

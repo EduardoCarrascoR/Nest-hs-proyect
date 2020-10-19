@@ -6,6 +6,7 @@ import { User, Auth } from '../../common/decorators';
 import { AppResources } from '../../common/enums';
 import { User as UserEntity } from '../../entities';
 import { loginDto } from '../dto';
+import { guardAuthGuard } from 'src/guards/guard-auth.guard';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -16,8 +17,18 @@ export class AuthController {
 
   @UseGuards(localAuthGuard)
   @Post('/login')
-  async login(@Body() loginDto: loginDto, @User() user: UserEntity){
+  async loginWeb(@Body() loginDto: loginDto, @User() user: UserEntity){
     const data =  await this.authService.login(user)
+    return {
+      message: 'Login sucess',
+      data
+    }
+  }
+
+  @UseGuards(guardAuthGuard)
+  @Post('/loginApp')
+  async loginApp(@Body() loginDto: loginDto, @User() user: UserEntity){
+    const data =  await this.authService.loginGuard(user)
     return {
       message: 'Login sucess',
       data
