@@ -42,7 +42,7 @@ export class AuthService {
     let rutformat = await this.userService.rutformat(rut)
     let value = await this.userService.dgv(rutformat)
 
-    if(value===false) throw new HttpException({ success: false, status: HttpStatus.BAD_REQUEST, message:'Rut not valid'}, HttpStatus.BAD_REQUEST);
+    if(value===false) throw new HttpException({ success: false, status: HttpStatus.BAD_REQUEST, message:'Rut is not valid'}, HttpStatus.BAD_REQUEST);
 
     if(user) {
       if(bcrypt.compareSync(pass, user.password)) {
@@ -52,7 +52,7 @@ export class AuthService {
         else throw new HttpException({ success: false, status: HttpStatus.UNAUTHORIZED, message: "User doesn't authorized"},HttpStatus.UNAUTHORIZED);
 
       } else {
-        throw new HttpException({ success: false, status: HttpStatus.CONFLICT, message: "Passwords don't match"},HttpStatus.CONFLICT);
+        throw new HttpException({ success: false, status: HttpStatus.CONFLICT, message: "User or password are not valid"},HttpStatus.CONFLICT);
 
       }
     } else {
