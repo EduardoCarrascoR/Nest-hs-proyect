@@ -19,14 +19,14 @@ export class AuthController {
   @Post('/login')
   async loginWeb(@Body() loginDto: loginDto, @User() user: UserEntity, @Res() res){
     const data =  await this.authService.login(user)
-    return res.status(HttpStatus.ACCEPTED).json({ success: true, message: 'Login sucess', data })
+    return res.status(HttpStatus.ACCEPTED).json({ success: true, message: 'Login success', data })
   }
 
   @UseGuards(guardAuthGuard)
   @Post('/loginApp')
   async loginApp(@Body() loginDto: loginDto, @User() user: UserEntity, @Res() res){
     const data =  await this.authService.loginGuard(user)
-    return res.status(HttpStatus.ACCEPTED).json({ success: true, message: 'Login sucess', data })
+    return res.status(HttpStatus.ACCEPTED).json({ success: true, message: 'Login success', data })
   }
 
   @Auth({
