@@ -15,28 +15,50 @@ export class AuthService {
 
   async validateUserAdmin(rut: string, pass: string): Promise<any> {
     const user = await this.userService.findOneUserByRut(rut);
+    let rutformat = await this.userService.rutformat(rut)
+    let value = await this.userService.dgv(rutformat)
 
-    if(user && bcrypt.compare(pass, user.password)){
-      const { password, roles, ...rest } = user
-      if(roles.includes(AppRoles.Admin)) return rest;
-      else throw new HttpException({ success: false, status: HttpStatus.UNAUTHORIZED, message: "User doesn't authorized"},HttpStatus.UNAUTHORIZED);
-      
+    if(value===false) throw new HttpException({ success: false, status: HttpStatus.BAD_REQUEST, message:'Rut not valid'}, HttpStatus.BAD_REQUEST);
+
+    if(user) {
+      if(bcrypt.compareSync(pass, user.password)) {        
+        const { password, roles, ...rest } = user
+
+        if(roles.includes(AppRoles.Admin)) return rest;
+        else throw new HttpException({ success: false, status: HttpStatus.UNAUTHORIZED, message: "User doesn't authorized"},HttpStatus.UNAUTHORIZED);
+
+      } else {
+        throw new HttpException({ success: false, status: HttpStatus.CONFLICT, message: "Passwords don't match"},HttpStatus.CONFLICT);
+
+      }
+    } else {
+      throw new HttpException({ success: false, status: HttpStatus.BAD_REQUEST, message: "User doesn't exist or authorized"},HttpStatus.BAD_REQUEST);
+
     }
-
-    return null
   }
 
   async validateUserGuard(rut: string, pass: string): Promise<any> {
     const user = await this.userService.findOneUserByRut(rut);
+    let rutformat = await this.userService.rutformat(rut)
+    let value = await this.userService.dgv(rutformat)
 
-    if(user && bcrypt.compare(pass, user.password)){
-      const { password, roles, ...rest } = user
-      if(roles.includes(AppRoles.Guard)) return rest;
-      else throw new HttpException({ success: false, status: HttpStatus.UNAUTHORIZED, message: "User doesn't authorized"},HttpStatus.UNAUTHORIZED);
-      
+    if(value===false) throw new HttpException({ success: false, status: HttpStatus.BAD_REQUEST, message:'Rut not valid'}, HttpStatus.BAD_REQUEST);
+
+    if(user) {
+      if(bcrypt.compareSync(pass, user.password)) {
+        const { password, roles, ...rest } = user
+
+        if(roles.includes(AppRoles.Guard)) return rest;
+        else throw new HttpException({ success: false, status: HttpStatus.UNAUTHORIZED, message: "User doesn't authorized"},HttpStatus.UNAUTHORIZED);
+
+      } else {
+        throw new HttpException({ success: false, status: HttpStatus.CONFLICT, message: "Passwords don't match"},HttpStatus.CONFLICT);
+
+      }
+    } else {
+      throw new HttpException({ success: false, status: HttpStatus.BAD_REQUEST, message: "User doesn't exist or authorized"},HttpStatus.BAD_REQUEST);
+
     }
-
-    return null
   }
 
   async login(user: User) {
@@ -60,5 +82,7 @@ export class AuthService {
 
     }
   }
+
+
 
 }

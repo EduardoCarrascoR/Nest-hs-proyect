@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, HttpStatus, Param, Post, Put, Res } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, HttpException, HttpStatus, Param, Post, Put, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Auth } from '../../../common/decorators';
 import { AppResources } from '../../../common/enums';
@@ -20,6 +20,7 @@ export class ClientsController {
     @Get('/all')
     async getClients(@Res() res) {
         const clients = await this.clientService.findAllClients();
+        if(clients.length == 0) throw new HttpException({ success: false, status: HttpStatus.NOT_FOUND, message: "Clients not found" }, HttpStatus.NOT_FOUND)
         return res.status(HttpStatus.ACCEPTED).json({ success: true, clients: clients })
     }
 
