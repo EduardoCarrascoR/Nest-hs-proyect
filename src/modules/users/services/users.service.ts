@@ -118,14 +118,14 @@ export class UsersService {
         return await this.userRepository.save(editedUser);
     }
 
-    private rutformat(rut:string){
+    rutformat(rut:string){
         
         // Despejar Puntos
         let valor = rut.replace('.','').replace('.','');
         return valor;
     }
 
-    private dgv(rut: string){  
+    dgv(rut: string){  
         
         // Valida el rut con su cadena completa "XXXXXXXX-X"
         if (!/^[0-9]+[-|‐]{1}[0-9kK]{1}$/.test( rut ))
@@ -138,7 +138,7 @@ export class UsersService {
 
     }
 
-    private dv(T) {
+    dv(T) {
         var M=0,S=1;
             for(;T;T=Math.floor(T/10))
                 S=(S+T%10*(9-M++%6))%11;
