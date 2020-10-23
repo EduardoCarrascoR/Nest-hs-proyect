@@ -5,7 +5,7 @@ import { UsersService } from 'src/modules/users/services/users.service';
 import { getConnection, Repository } from 'typeorm';
 import { shiftState } from '../../../common/enums';
 import { Shift, User } from '../../../entities';
-import { CreateShiftDTO, ShiftDTO } from '../dtos/shift.dto';
+import { CreateShiftDTO, ShiftDTO, ShiftPaginationDTO } from '../dtos/shift.dto';
 
 @Injectable()
 export class ShiftsService {
@@ -40,14 +40,12 @@ export class ShiftsService {
                 if(!value) throw new HttpException({ success: false, status: HttpStatus.CONFLICT, message: 'Some of the shift exist or you are not authorized'},HttpStatus.CONFLICT)
     
                 for await (const element of dates) {
-                    console.log('creando shifts')
                     const shift: Shift = await transaction.create(Shift,{ 
                         ...rest,
                         guards,
                         date: element
                     })
                     await transaction.save(shift)
-                    console.log(shift)
                 }
                 if(!value) throw new HttpException({ success: false, status: HttpStatus.CONFLICT, message: 'Some of the shift duplicado exist or you are not authorized'},HttpStatus.CONFLICT)
     
@@ -59,7 +57,7 @@ export class ShiftsService {
         return true;
     }
 
-    async shiftInicialized(id: number, shiftEntity?: Shift) {
+    async shiftInicialized(shiftId: number, shiftEntity?: Shift) {
         const shift = await this.shiftRepository.findOneOrFail()
         .then(s => !shiftEntity ? s : !!s && shiftEntity.shiftId === s.shiftId ? s : null)
 
@@ -79,6 +77,20 @@ export class ShiftsService {
         const editedShift = await Object.assign(shift, { state: shiftState.Finalized })
 
         return await this.shiftRepository.save(editedShift);
+    }
+
+    async  getShiftWithPagination(shiftPagination: ShiftPaginationDTO) {
+        const skip =  shiftPagination.limit*(shiftPagination.page -1);
+
+        const paginatedShift = await this.shiftRepository
+            .createQueryBuilder("shift")
+            .leftJoinAndSelect("shift.guards", "guard")
+            .skip(skip)
+            .take(shiftPagination.limit)
+            .getMany();
+
+        if (!paginatedShift) throw new HttpException({ success: false, status: HttpStatus.NOT_FOUND, message: 'Shifts does not exists or unauthorized'}, HttpStatus.NOT_FOUND)
+        return paginatedShift
     }
 
     async statusChange() {

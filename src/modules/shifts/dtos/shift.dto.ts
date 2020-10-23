@@ -45,13 +45,18 @@ export class ShiftDTO {
         message: `Must be a valid type value, ${ EnumToString(shiftType) }`
     })
     readonly type: shiftType;
+
     @IsMilitaryTime()
     readonly start: string;
+
     @IsMilitaryTime()
     readonly finish?: string;
+    
     @IsISO8601()
     readonly date: Date;
+
     readonly shiftPlace: string;
+
     @IsEnum(shiftState,{ 
         message: `must be a valid state value, ${ EnumToString(shiftState) }`
     })
@@ -60,3 +65,16 @@ export class ShiftDTO {
     readonly guards?: UserDTO[]
 
 }
+
+export class ShiftPaginationDTO {
+    
+    @IsNumber()
+    @ApiProperty()
+    readonly page: number;
+
+    @IsNumber()
+     @ApiProperty()
+    readonly limit: number;
+
+}
+
