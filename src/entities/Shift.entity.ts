@@ -14,6 +14,7 @@ import { Client } from "./Client.entity";
 import { News } from "./News.entity";
 import { User } from "./User.entity";
 import { shiftType, shiftState } from "../common/enums";
+import { Workedhours } from "./WorkedHours.entity";
 
 @Index("fk_shift_client1_idx", ["client"], {})
 @Entity("shift", { schema: "hs" })
@@ -53,6 +54,9 @@ export class Shift {
 
   @OneToMany(() => Report, (report) => report.shiftShiftId)
   reports: Report[];
+
+  @OneToMany(() => Workedhours, (workedhours) => workedhours.shiftHours)
+  workedhours: Workedhours[];
 
   @ManyToOne(() => Client, (client) => client.shifts, {
     onDelete: "RESTRICT",
