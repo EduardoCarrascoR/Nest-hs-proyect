@@ -7,7 +7,7 @@ import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { ClientsModule } from './modules/clients/clients.module';
 import { ShiftsModule } from './modules/shifts/shifts.module';
-import { Shift, Client, User, Report, News } from './entities'
+import { Shift, Client, User, Report, News, Workedhours } from './entities'
 import { roles } from './app.roles';
 
 @Module({
@@ -21,7 +21,7 @@ import { roles } from './app.roles';
         username: config.get<string>(DATABASE_USER),
         password: config.get<string>(DATABASE_PASS),
         database: config.get<string>(DATABASE_DB),
-        entities: [ Shift, Client, User, Report, News ],
+        entities: [ Shift, Client, User, Report, News, Workedhours ],
         autoLoadEntities: true,
         synchronize: true,
         logging: true,

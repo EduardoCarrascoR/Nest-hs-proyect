@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsDate, IsEnum, IsISO8601, IsMilitaryTime, IsNumber, IsString, NotContains } from "class-validator";
+import { IsDate, IsEnum, IsISO8601, IsMilitaryTime, IsNumber, IsOptional, IsString, NotContains } from "class-validator";
 import { shiftState } from "../../../common/enums";
 import { shiftType } from "../../../common/enums/shift-types.enum";
 import { EnumToString } from "../../../common/helpers/enumToString";
@@ -73,8 +73,17 @@ export class ShiftPaginationDTO {
     readonly page: number;
 
     @IsNumber()
-     @ApiProperty()
+    @ApiProperty()
     readonly limit: number;
 
+}
+
+export class ShiftHoursWorkedDTO {
+
+    @IsNumber()
+    @IsOptional()
+    @ApiProperty()
+    readonly idGuard?: number;
+        
 }
 

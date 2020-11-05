@@ -4,21 +4,43 @@ import { UserDTO } from 'src/modules/users/dtos';
 import { UsersService } from 'src/modules/users/services/users.service';
 import { getConnection, Repository } from 'typeorm';
 import { shiftState } from '../../../common/enums';
-import { Shift, User } from '../../../entities';
-import { CreateShiftDTO, ShiftDTO, ShiftPaginationDTO } from '../dtos/shift.dto';
+import { Shift, User, Workedhours } from '../../../entities';
+import { CreateShiftDTO, ShiftDTO, ShiftHoursWorkedDTO, ShiftPaginationDTO } from '../dtos/shift.dto';
 
 @Injectable()
 export class ShiftsService {
     constructor(
         @InjectRepository(Shift)
             private readonly shiftRepository: Repository<Shift>,
-            private readonly userService: UsersService
+            private readonly userService: UsersService,
     ) {}
 
     async findAllShift(): Promise<ShiftDTO[]> {
-        const shifts = await this.shiftRepository.find({ relations: ["guards"] })
+        const shifts = await this.shiftRepository.find({ relations: ["guards", "workedhours"] })
         return shifts;
     }
+
+    async findAssignedShiftsGuard( UserEntity?: User, user_id?: number) {
+        
+        if(!UserEntity){
+            const guardShifts = await this.shiftRepository
+            .createQueryBuilder("shift")
+            .leftJoinAndSelect("shift.guards", "guard")
+            .where("guard.id = :user_id", { user_id: user_id })
+            .getMany();
+            return guardShifts
+
+        } else {
+            const guardShifts = await this.shiftRepository
+            .createQueryBuilder("shift")
+            .leftJoinAndSelect("shift.guards", "guard")
+            .where("guard.id = :user_id", { user_id: UserEntity.id })
+            .getMany();
+            return guardShifts
+        
+        }
+        
+    } 
 
     async addShift( shiftDTO: CreateShiftDTO) {
         const { guardsIds, dates, ...rest } = shiftDTO
@@ -57,26 +79,94 @@ export class ShiftsService {
         return true;
     }
 
-    async shiftInicialized(shiftId: number, shiftEntity?: Shift) {
-        const shift = await this.shiftRepository.findOneOrFail()
-        .then(s => !shiftEntity ? s : !!s && shiftEntity.shiftId === s.shiftId ? s : null)
-
+    async shiftInicialized(shiftId: number, clientId: number, UserEntity?: User, user_id?: number) {
+        const shift = await this.shiftRepository.findOne({ shiftId, client: clientId },{ relations: ["guards"] })
+        let timeDB = await this.shiftRepository
+            .query("SELECT CURTIME()")
+        let json =  JSON.stringify(timeDB[0])
+        let time = json.slice(json.indexOf(":")+2, -2)
         if(!shift) throw new HttpException({ success: false, status: HttpStatus.NOT_FOUND, message: 'Shift does not exists or unauthorized'},HttpStatus.NOT_FOUND)
-    
-        const editedShift = await Object.assign(shift, { state: shiftState.Initialized })
 
-        return await this.shiftRepository.save(editedShift);
+        if(!UserEntity) { 
+            await getConnection().transaction(async transaction => {
+                const guardhoursDB: Workedhours = await transaction.findOne(Workedhours,{ 
+                    guardId: user_id,
+                    shiftHoursId: shiftId
+                })
+                if(!guardhoursDB) {
+                    const guardhours: Workedhours = await transaction.create(Workedhours,{ 
+                        guardId: user_id,
+                        start: time,
+                        shiftHours: shift
+                    })
+                    await transaction.save(guardhours)
+                    return await guardhours;
+                } else throw new HttpException({ success: false, status: HttpStatus.CONFLICT, message: 'It isn`t possible to start this shift since it has already started'},HttpStatus.CONFLICT)
+                
+            })        
+        } else { 
+            if(shift.guards.some(u => u.id === UserEntity.id)) { 
+                await getConnection().transaction(async transaction => {
+                    const guardhoursDB: Workedhours = await transaction.findOne(Workedhours,{ 
+                        guardId: UserEntity.id,
+                        shiftHoursId: shiftId
+                    })
+                    if(!guardhoursDB) {
+                        await console.log("esta", guardhoursDB)
+                        const guardhours: Workedhours = await transaction.create(Workedhours,{ 
+                            guardId: UserEntity.id,
+                            start: time,
+                            shiftHours: shift
+                        })
+                        await transaction.save(guardhours)
+                        return await guardhours;
+                    } else throw new HttpException({ success: false, status: HttpStatus.CONFLICT, message: 'It isn`t possible to start this shift since it has already started'},HttpStatus.CONFLICT)
+                    
+                })
+                
+            } else {
+                throw new HttpException({ success: false, status: HttpStatus.UNAUTHORIZED, message: 'You`re unauthorized to upate this shift'},HttpStatus.UNAUTHORIZED)
+            }
+        }    
     }
 
-    async shiftFinalized(shiftId: number, shiftEntity?: Shift) {
-        const shift = await this.shiftRepository.findOne({shiftId})
-        .then(s => !shiftEntity ? s : !!s && shiftEntity.shiftId === s.shiftId ? s : null)
-        
-        if (!shift) throw new HttpException({ success: false, status: HttpStatus.NOT_FOUND, message: 'Shift does not exists or unauthorized'}, HttpStatus.NOT_FOUND)
-        
-        const editedShift = await Object.assign(shift, { state: shiftState.Finalized })
+    async shiftFinalized(shiftId: number, clientId: number, UserEntity?: User, user_id?: number) {
+        const shift = await this.shiftRepository.findOne({ shiftId, client: clientId },{ relations: ["guards"] })
+        let timeDB = await this.shiftRepository
+            .query("SELECT CURTIME()")
+        let json =  JSON.stringify(timeDB[0])
+        let time = json.slice(json.indexOf(":")+2, -2)
+        if(!shift) throw new HttpException({ success: false, status: HttpStatus.NOT_FOUND, message: 'Shift does not exists or unauthorized'},HttpStatus.NOT_FOUND)
 
-        return await this.shiftRepository.save(editedShift);
+        if(!UserEntity) { 
+            await getConnection().transaction(async transaction => {
+                const guardhoursDB: Workedhours = await transaction.findOne(Workedhours,{ 
+                    guardId: user_id,
+                    shiftHoursId: shiftId
+                })
+                if(guardhoursDB.finish === null) {
+                    await transaction.update(Workedhours, { shiftHoursId: shiftId, guardId: user_id }, { finish: time })
+                    return await true;    
+                } else throw new HttpException({ success: false, status: HttpStatus.UNAUTHORIZED, message: 'It isn`t possible to finish this shift since it has already finished'},HttpStatus.UNAUTHORIZED)
+            })
+
+        } else { 
+            if(shift.guards.some(u => u.id === UserEntity.id)) { 
+                await getConnection().transaction(async transaction => {
+                    const guardhoursDB: Workedhours = await transaction.findOne(Workedhours,{ 
+                        guardId: UserEntity.id,
+                        shiftHoursId: shiftId
+                    })
+                    if(guardhoursDB.finish === null) {
+                        await transaction.update(Workedhours, { shiftHoursId: shiftId, guardId: UserEntity.id }, { finish: time })
+                        return await true;    
+                    } else throw new HttpException({ success: false, status: HttpStatus.UNAUTHORIZED, message: 'It isn`t possible to finish this shift since it has already finished'},HttpStatus.UNAUTHORIZED)
+                })
+                
+            } else {
+                throw new HttpException({ success: false, status: HttpStatus.UNAUTHORIZED, message: 'You`re unauthorized to upate this shift'},HttpStatus.UNAUTHORIZED)
+            }
+        }
     }
 
     async  getShiftWithPagination(shiftPagination: ShiftPaginationDTO) {
