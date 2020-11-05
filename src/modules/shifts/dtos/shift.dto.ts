@@ -73,7 +73,7 @@ export class ShiftPaginationDTO {
     readonly page: number;
 
     @IsNumber()
-     @ApiProperty()
+    @ApiProperty()
     readonly limit: number;
 
 }

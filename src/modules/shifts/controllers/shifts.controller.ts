@@ -117,12 +117,12 @@ export class ShiftsController {
         action: 'read',
         resource: AppResources.SHIFT,
     })
-    @Get('/pagiShift')
+    @Post('/pagiShift')
     async shiftPagination(@Body() paginationDTO: ShiftPaginationDTO, @Res() res) {
         const shifts = await this.shiftService.getShiftWithPagination(paginationDTO);
         if(shifts.length == 0) throw new HttpException({ success: false, status: HttpStatus.NOT_FOUND, message: "Shifts not found" }, HttpStatus.NOT_FOUND)
         
-        return res.status(HttpStatus.FOUND).json({ success: true, shifts: shifts })
+        return res.status(HttpStatus.ACCEPTED).json({ success: true, shifts: shifts })
     }
 
 }
