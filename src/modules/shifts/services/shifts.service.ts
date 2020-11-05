@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { UserDTO } from 'src/modules/users/dtos';
 import { UsersService } from 'src/modules/users/services/users.service';
 import { getConnection, Repository } from 'typeorm';
-import { shiftState } from '../../../common/enums';
 import { Shift, User, Workedhours } from '../../../entities';
 import { CreateShiftDTO, ShiftDTO, ShiftHoursWorkedDTO, ShiftPaginationDTO } from '../dtos/shift.dto';
 
@@ -16,7 +15,7 @@ export class ShiftsService {
     ) {}
 
     async findAllShift(): Promise<ShiftDTO[]> {
-        const shifts = await this.shiftRepository.find({ relations: ["guards", "workedhours"] })
+        const shifts = await this.shiftRepository.find({ relations: ["guards", "workedhours", "clientClient"] })
         return shifts;
     }
 
@@ -175,6 +174,8 @@ export class ShiftsService {
         const paginatedShift = await this.shiftRepository
             .createQueryBuilder("shift")
             .leftJoinAndSelect("shift.guards", "guard")
+            .leftJoinAndSelect("shift.clientClient", "client")
+            .leftJoinAndSelect("shift.workedhours", "workedhour")
             .skip(skip)
             .take(shiftPagination.limit)
             .getMany();
