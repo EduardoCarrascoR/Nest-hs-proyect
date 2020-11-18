@@ -14,63 +14,63 @@ export class ShiftsController {
         private readonly shiftService: ShiftsService,
         @InjectRolesBuilder()
         private readonly rolesBuilder: RolesBuilder
-        ) {}
+    ) {}
         
-        @Auth({
-            possession: 'any',
-            action: 'create',
-            resource: AppResources.SHIFT,
-        })
-        @Post()
-        async createShift(@Body() shiftDTO: CreateShiftDTO, @Res() res) {
-            const success = await this.shiftService.addShift(shiftDTO);
-            
-            return await res.status(HttpStatus.CREATED).json({ success: success, message: 'Shift created' })
-        }
+    @Auth({
+        possession: 'any',
+        action: 'create',
+        resource: AppResources.SHIFT,
+    })
+    @Post()
+    async createShift(@Body() shiftDTO: CreateShiftDTO, @Res() res) {
+        const success = await this.shiftService.addShift(shiftDTO);
         
-        @Auth({
-            possession: 'any',
-            action: 'read',
-            resource: AppResources.SHIFT,
-        })
-        @Get('/all')
-        async getShifts(@Res() res) {
-            const shifts = await this.shiftService.findAllShift();
-            if(shifts.length == 0) throw new HttpException({ success: false, status: HttpStatus.NOT_FOUND, message: "Shifts not found" }, HttpStatus.NOT_FOUND)
-            return res.status(HttpStatus.FOUND).json({ success: true, shifts: shifts })
-        }
+        return await res.status(HttpStatus.CREATED).json({ success: success, message: 'Shift created' })
+    }
+        
+    @Auth({
+        possession: 'any',
+        action: 'read',
+        resource: AppResources.SHIFT,
+    })
+    @Get('/all')
+    async getShifts(@Res() res) {
+        const shifts = await this.shiftService.findAllShift();
+        if(shifts.length == 0) throw new HttpException({ success: false, status: HttpStatus.NOT_FOUND, message: "Shifts not found" }, HttpStatus.NOT_FOUND)
+        return res.status(HttpStatus.FOUND).json({ success: true, shifts: shifts })
+    }
 
-        @Auth({
-            possession: 'own',
-            action: 'update',
-            resource: AppResources.SHIFT,
-        })
-        @Get('/guardShifts')
-        async guardShifts( @User() user: UserEntity, @Res() res, @Body() workedHour?: ShiftHoursWorkedDTO) {
-            let shifts;
-            if(this.rolesBuilder
-                .can(user.roles)
-                .updateAny(AppResources.SHIFT)
-                .granted
-            ) {
-                //es Admin
-                shifts = await this.shiftService.findAssignedShiftsGuard(undefined,workedHour.idGuard)
-            } else {
-                // es Guard
-                shifts = await this.shiftService.findAssignedShiftsGuard(user)
-            }
-            if(shifts.length == 0) throw new HttpException({ success: false, status: HttpStatus.NOT_FOUND, message: "Shifts not found" }, HttpStatus.NOT_FOUND)
-            return res.status(HttpStatus.OK).json({ success: true, message: 'Shifts assingned', shifts })
+    @Auth({
+        possession: 'own',
+        action: 'update',
+        resource: AppResources.SHIFT,
+    })
+    @Get('/guardShifts/:id')
+    async guardShifts( @User() user: UserEntity, @Res() res, @Param('id') guardId: number) {
+        let shifts;
+        if(this.rolesBuilder
+            .can(user.roles)
+            .updateAny(AppResources.SHIFT)
+            .granted
+        ) {
+            //es Admin
+            shifts = await this.shiftService.findAssignedShiftsGuard(undefined,guardId)
+        } else {
+            // es Guard
+            shifts = await this.shiftService.findAssignedShiftsGuard(user)
         }
+        if(shifts.length == 0) throw new HttpException({ success: false, status: HttpStatus.NOT_FOUND, message: "Shifts not found" }, HttpStatus.NOT_FOUND)
+        return res.status(HttpStatus.OK).json({ success: true, message: 'Shifts assingned', shifts })
+    }
         
-        @Auth({
-            possession: 'own',
-            action: 'update',
-            resource: AppResources.SHIFT,
-        })
-        @Put('init/:id/:idClient')
-        async Initialized(@Param('id') id: number,@Param('idClient') idClient: number, @User() user: UserEntity, @Res() res, @Body() workedHour?: ShiftHoursWorkedDTO) {
-            let shift;
+    @Auth({
+        possession: 'own',
+        action: 'update',
+        resource: AppResources.SHIFT,
+    })
+    @Put('init/:id/:idClient')
+    async Initialized(@Param('id') id: number,@Param('idClient') idClient: number, @User() user: UserEntity, @Res() res, @Body() workedHour?: ShiftHoursWorkedDTO) {
+        let shift;
         if(!id) throw new HttpException({ success: false, status: HttpStatus.BAD_REQUEST, message: "Can't initialized shift id" }, HttpStatus.BAD_REQUEST)
         if(this.rolesBuilder
             .can(user.roles)

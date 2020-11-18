@@ -10,6 +10,7 @@ roles
     .readOwn([AppResources.AUTH])
     .updateOwn([AppResources.SHIFT])
     .readOwn([AppResources.SHIFT])
+    .createOwn([AppResources.REPORT])
     // ADMIN ROLES
     .grant(AppRoles.Admin)
     .extend(AppRoles.Guard)
@@ -22,3 +23,4 @@ roles
     .createAny([AppResources.SHIFT])
     .updateAny([AppResources.SHIFT])
     .readAny([AppResources.SHIFT])
+    .readAny([AppResources.REPORT])

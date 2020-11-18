@@ -1,7 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsDate, IsEnum, IsISO8601, IsMilitaryTime, IsNumber, IsOptional, IsString, NotContains } from "class-validator";
-import { shiftState } from "../../../common/enums";
-import { shiftType } from "../../../common/enums/shift-types.enum";
+import { shiftState, shiftType } from "../../../common/enums";
 import { EnumToString } from "../../../common/helpers/enumToString";
 import { UserDTO } from "../../users/dtos";
 

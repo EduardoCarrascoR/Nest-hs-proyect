@@ -13,7 +13,7 @@ async function bootstrap() {
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     allowedHeaders: "Origin, X-Requested-With, Content-Type, Accept, Authorization"
 });
-  const logger = new Logger();
+  const logger = new Logger('NestApplication');
   const config = app.get(ConfigService);
   const port = Number(config.get<string>(PORT)) || 3000;
   

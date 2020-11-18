@@ -9,6 +9,7 @@ import { ClientsModule } from './modules/clients/clients.module';
 import { ShiftsModule } from './modules/shifts/shifts.module';
 import { Shift, Client, User, Report, News, Workedhours } from './entities'
 import { roles } from './app.roles';
+import { ReportsModule } from './modules/reports/reports.module';
 
 @Module({
   imports: [  
@@ -34,7 +35,7 @@ import { roles } from './app.roles';
       isGlobal: true,
       envFilePath: '.env'
     }),
-    AccessControlModule.forRoles(roles), AuthModule, UsersModule, ClientsModule, ShiftsModule, ],
+    AccessControlModule.forRoles(roles), AuthModule, UsersModule, ClientsModule, ShiftsModule, ReportsModule, ],
   controllers: [],
   providers: [],
 })

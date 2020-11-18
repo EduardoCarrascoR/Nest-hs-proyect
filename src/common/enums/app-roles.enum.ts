@@ -9,5 +9,6 @@ export enum AppResources {
     USER = 'USER',
     AUTH = 'AUTH',
     CLIENT = 'CLIENT',
-    SHIFT = 'SHIFT'
+    SHIFT = 'SHIFT',
+    REPORT = 'REPORT'
 }
