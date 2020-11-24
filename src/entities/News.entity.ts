@@ -15,8 +15,8 @@ export class News {
   @Column("varchar", { name: "title", nullable: true, length: 45 })
   title: string | null;
 
-  @Column("varchar", { name: "descripcion", nullable: true, length: 45 })
-  descripcion: string | null;
+  @Column("varchar", { name: "description", nullable: true, length: 250 })
+  description: string | null;
 
   @ManyToOne(() => Shift, (shift) => shift.news, {
     onDelete: "RESTRICT",
