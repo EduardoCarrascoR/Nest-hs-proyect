@@ -1,12 +1,13 @@
 import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import { Server } from 'socket.io';
 import { PORT_GATEWAY } from "./config/constants";
 
-@WebSocketGateway(4001)
+@WebSocketGateway(4001, { transports: 'websocket', namespace: '/websocket', serveClient: true} )
 export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect{
   @WebSocketServer()
-  wss;
+  wss: Server;
 
   private logger = new Logger('NestGateway');
   config : ConfigService

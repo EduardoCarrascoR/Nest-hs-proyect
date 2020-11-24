@@ -20,9 +20,11 @@ export class ReportsService {
         await getConnection().transaction(async transaction => {
             const shift: Shift = await transaction.findOne(Shift, { where: { shiftId: reportDTO.shiftId } })
             const shiftInitalizedOrFinalized = await transaction.findOne(Workedhours, { where: { shiftHoursId: reportDTO.shiftId, guardId: UserEntity.id }})
-            if(!shift) throw new HttpException({ success: false, status: HttpStatus.NOT_FOUND, message: 'Shift does not exists or unauthorized'},HttpStatus.NOT_FOUND)
+            
+            if(!shift) throw new HttpException({ success: false, status: HttpStatus.NOT_FOUND, message: 'Shift does not exists or unauthorized'}, HttpStatus.NOT_FOUND)
             if(!shiftInitalizedOrFinalized || shiftInitalizedOrFinalized.start === null ) throw new HttpException({ success: false, status: HttpStatus.NOT_FOUND, message: 'shift has not been started or unauthorized'},HttpStatus.NOT_FOUND)
             if(shiftInitalizedOrFinalized.finish !== null) throw new HttpException({ success: false, status: HttpStatus.CONFLICT, message: 'shift has been finished or unauthorized'},HttpStatus.CONFLICT)
+            
             const report: Report = await transaction.create(Report, {
                 type: reportDTO.type,
                 clientId: reportDTO.clientId,
@@ -32,6 +34,7 @@ export class ReportsService {
             })
             await transaction.save(report);
             this.gateway.wss.emit('newReport', report)
+            
             return await report;
         })
     }

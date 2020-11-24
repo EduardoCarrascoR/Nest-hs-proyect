@@ -23,8 +23,10 @@ async function bootstrap() {
   initSwagger(app);
   setDefaultUser(config);
   app.useGlobalPipes(new ValidationPipe());
-  await app.listen(port);
-  logger.log(`Server is running in ${ await app.getUrl() }`)
+  const server =await app.listen(port, () => {
+
+    logger.log(`Server is running in ${ server.address().port }`)
+  });
 
 }
 bootstrap();

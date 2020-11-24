@@ -19,7 +19,7 @@ export class ShiftsService {
         return shifts;
     }
 
-    async findAssignedShiftsGuard( UserEntity?: User, user_id?: number) {
+    async findAssignedShiftsGuard(UserEntity?: User, user_id?: number) {
         
         if(!UserEntity){
             const guardShifts = await this.shiftRepository
@@ -41,7 +41,7 @@ export class ShiftsService {
         
     } 
 
-    async addShift( shiftDTO: CreateShiftDTO) {
+    async addShift(shiftDTO: CreateShiftDTO) {
         const { guardsIds, dates, ...rest } = shiftDTO
         let guards: UserDTO[];
         const daterepeated = dates.every( (valor, indice, lista) => {return (lista.indexOf(valor) === indice);})
