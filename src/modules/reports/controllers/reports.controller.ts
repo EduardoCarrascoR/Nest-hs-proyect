@@ -22,7 +22,7 @@ export class ReportsController {
     async createReport(@Body() reportDTO: CreateReportDTO, @User() user: UserEntity, @Res() res) {
         const report = await this.reportService.addReport(reportDTO, user);
 
-        return await res.status(HttpStatus.CREATED).json({ success: true, message: 'Shift created', report })
+        return await res.status(HttpStatus.CREATED).json({ success: true, message: 'Report created', report })
     }
 
 }

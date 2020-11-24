@@ -19,7 +19,7 @@ export class ReportsService {
     async addReport(reportDTO: CreateReportDTO, UserEntity?: User) {
         await getConnection().transaction(async transaction => {
             const shift: Shift = await transaction.findOne(Shift, { where: { shiftId: reportDTO.shiftId } })
-            const shiftInitalizedOrFinalized = await transaction.findOne(Workedhours, { where: { shiftHoursId: reportDTO.shiftId, guardId: UserEntity.id }})
+            const shiftInitalizedOrFinalized: Workedhours = await transaction.findOne(Workedhours, { where: { shiftHoursId: reportDTO.shiftId, guardId: UserEntity.id }})
             
             if(!shift) throw new HttpException({ success: false, status: HttpStatus.NOT_FOUND, message: 'Shift does not exists or unauthorized'}, HttpStatus.NOT_FOUND)
             if(!shiftInitalizedOrFinalized || shiftInitalizedOrFinalized.start === null ) throw new HttpException({ success: false, status: HttpStatus.NOT_FOUND, message: 'shift has not been started or unauthorized'},HttpStatus.NOT_FOUND)
