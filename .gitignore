@@ -2,6 +2,7 @@
 /dist
 /.env
 /node_modules
+/procfile
 
 # Logs
 logs

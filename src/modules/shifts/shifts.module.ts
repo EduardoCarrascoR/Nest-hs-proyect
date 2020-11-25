@@ -11,6 +11,7 @@ import { UsersModule } from '../users/users.module';
     UsersModule
   ],
   providers: [ShiftsService],
-  controllers: [ShiftsController]
+  controllers: [ShiftsController],
+  exports: [ShiftsService]
 })
 export class ShiftsModule {}

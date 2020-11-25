@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { UserDTO } from 'src/modules/users/dtos';
 import { UsersService } from 'src/modules/users/services/users.service';
 import { getConnection, Repository } from 'typeorm';
-import { shiftState } from '../../../common/enums';
 import { Shift, User, Workedhours } from '../../../entities';
 import { CreateShiftDTO, ShiftDTO, ShiftHoursWorkedDTO, ShiftPaginationDTO } from '../dtos/shift.dto';
 
@@ -16,11 +15,11 @@ export class ShiftsService {
     ) {}
 
     async findAllShift(): Promise<ShiftDTO[]> {
-        const shifts = await this.shiftRepository.find({ relations: ["guards", "workedhours"] })
+        const shifts = await this.shiftRepository.find({ relations: ["guards", "workedhours", "clientClient"] })
         return shifts;
     }
 
-    async findAssignedShiftsGuard( UserEntity?: User, user_id?: number) {
+    async findAssignedShiftsGuard(UserEntity?: User, user_id?: number) {
         
         if(!UserEntity){
             const guardShifts = await this.shiftRepository
@@ -42,7 +41,7 @@ export class ShiftsService {
         
     } 
 
-    async addShift( shiftDTO: CreateShiftDTO) {
+    async addShift(shiftDTO: CreateShiftDTO) {
         const { guardsIds, dates, ...rest } = shiftDTO
         let guards: UserDTO[];
         const daterepeated = dates.every( (valor, indice, lista) => {return (lista.indexOf(valor) === indice);})
@@ -81,10 +80,6 @@ export class ShiftsService {
 
     async shiftInicialized(shiftId: number, clientId: number, UserEntity?: User, user_id?: number) {
         const shift = await this.shiftRepository.findOne({ shiftId, client: clientId },{ relations: ["guards"] })
-        let timeDB = await this.shiftRepository
-            .query("SELECT CURTIME()")
-        let json =  JSON.stringify(timeDB[0])
-        let time = json.slice(json.indexOf(":")+2, -2)
         if(!shift) throw new HttpException({ success: false, status: HttpStatus.NOT_FOUND, message: 'Shift does not exists or unauthorized'},HttpStatus.NOT_FOUND)
 
         if(!UserEntity) { 
@@ -96,7 +91,7 @@ export class ShiftsService {
                 if(!guardhoursDB) {
                     const guardhours: Workedhours = await transaction.create(Workedhours,{ 
                         guardId: user_id,
-                        start: time,
+                        start: (await this.timeInDB()).time,
                         shiftHours: shift
                     })
                     await transaction.save(guardhours)
@@ -112,10 +107,9 @@ export class ShiftsService {
                         shiftHoursId: shiftId
                     })
                     if(!guardhoursDB) {
-                        await console.log("esta", guardhoursDB)
                         const guardhours: Workedhours = await transaction.create(Workedhours,{ 
                             guardId: UserEntity.id,
-                            start: time,
+                            start: (await this.timeInDB()).time,
                             shiftHours: shift
                         })
                         await transaction.save(guardhours)
@@ -132,10 +126,6 @@ export class ShiftsService {
 
     async shiftFinalized(shiftId: number, clientId: number, UserEntity?: User, user_id?: number) {
         const shift = await this.shiftRepository.findOne({ shiftId, client: clientId },{ relations: ["guards"] })
-        let timeDB = await this.shiftRepository
-            .query("SELECT CURTIME()")
-        let json =  JSON.stringify(timeDB[0])
-        let time = json.slice(json.indexOf(":")+2, -2)
         if(!shift) throw new HttpException({ success: false, status: HttpStatus.NOT_FOUND, message: 'Shift does not exists or unauthorized'},HttpStatus.NOT_FOUND)
 
         if(!UserEntity) { 
@@ -144,10 +134,11 @@ export class ShiftsService {
                     guardId: user_id,
                     shiftHoursId: shiftId
                 })
+                if(!guardhoursDB || guardhoursDB.start === null ) throw new HttpException({ success: false, status: HttpStatus.NOT_FOUND, message: 'It isn`t possible to finish this shift since it has not already stared'},HttpStatus.NOT_FOUND)
                 if(guardhoursDB.finish === null) {
-                    await transaction.update(Workedhours, { shiftHoursId: shiftId, guardId: user_id }, { finish: time })
+                    await transaction.update(Workedhours, { shiftHoursId: shiftId, guardId: user_id }, { finish: (await this.timeInDB()).time })
                     return await true;    
-                } else throw new HttpException({ success: false, status: HttpStatus.UNAUTHORIZED, message: 'It isn`t possible to finish this shift since it has already finished'},HttpStatus.UNAUTHORIZED)
+                } else throw new HttpException({ success: false, status: HttpStatus.CONFLICT, message: 'It isn`t possible to finish this shift since it has already finished'},HttpStatus.CONFLICT)
             })
 
         } else { 
@@ -157,10 +148,11 @@ export class ShiftsService {
                         guardId: UserEntity.id,
                         shiftHoursId: shiftId
                     })
+                    if(!guardhoursDB || guardhoursDB.start === null ) throw new HttpException({ success: false, status: HttpStatus.NOT_FOUND, message: 'It isn`t possible to finish this shift since it has not already stared'},HttpStatus.NOT_FOUND)
                     if(guardhoursDB.finish === null) {
-                        await transaction.update(Workedhours, { shiftHoursId: shiftId, guardId: UserEntity.id }, { finish: time })
+                        await transaction.update(Workedhours, { shiftHoursId: shiftId, guardId: UserEntity.id }, { finish: (await this.timeInDB()).time })
                         return await true;    
-                    } else throw new HttpException({ success: false, status: HttpStatus.UNAUTHORIZED, message: 'It isn`t possible to finish this shift since it has already finished'},HttpStatus.UNAUTHORIZED)
+                    } else throw new HttpException({ success: false, status: HttpStatus.CONFLICT, message: 'It isn`t possible to finish this shift since it has already finished'},HttpStatus.CONFLICT)
                 })
                 
             } else {
@@ -175,6 +167,8 @@ export class ShiftsService {
         const paginatedShift = await this.shiftRepository
             .createQueryBuilder("shift")
             .leftJoinAndSelect("shift.guards", "guard")
+            .leftJoinAndSelect("shift.clientClient", "client")
+            .leftJoinAndSelect("shift.workedhours", "workedhour")
             .skip(skip)
             .take(shiftPagination.limit)
             .getMany();
@@ -183,9 +177,11 @@ export class ShiftsService {
         return paginatedShift
     }
 
-    async statusChange() {
-        let date = new Date()
-        console.log(date)
-        return await date
+    async timeInDB() {
+        let timeDB = await this.shiftRepository
+            .query("SELECT CURTIME()")
+        let json =  JSON.stringify(timeDB[0])
+        let time = json.slice(json.indexOf(":")+2, -2)
+        return { time }
     }
 }
