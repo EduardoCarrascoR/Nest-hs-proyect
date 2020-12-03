@@ -163,18 +163,28 @@ export class ShiftsService {
 
     async  getShiftWithPagination(shiftPagination: ShiftPaginationDTO) {
         const skip =  shiftPagination.limit*(shiftPagination.page -1);
+        let pages
 
-        const paginatedShift = await this.shiftRepository
-            .createQueryBuilder("shift")
+        const paginatedShift = await getConnection()
+            .createQueryBuilder()
+            .select("shift")
+            .from(Shift, "shift")
             .leftJoinAndSelect("shift.guards", "guard")
             .leftJoinAndSelect("shift.clientClient", "client")
             .leftJoinAndSelect("shift.workedhours", "workedhour")
             .skip(skip)
             .take(shiftPagination.limit)
             .getMany();
+        const shiftCount = await getConnection()
+            .createQueryBuilder()
+            .select("shift")
+            .from(Shift, "shift")
+            .getCount();
 
+        pages = await Math.ceil( shiftCount/ shiftPagination.limit);
         if (!paginatedShift) throw new HttpException({ success: false, status: HttpStatus.NOT_FOUND, message: 'Shifts does not exists or unauthorized'}, HttpStatus.NOT_FOUND)
-        return paginatedShift
+        if (!shiftCount) throw new HttpException({ success: false, status: HttpStatus.NOT_FOUND, message: `Shifts doesn't exists or unauthorized`}, HttpStatus.NOT_FOUND)
+        return { pages, pageSelected: shiftPagination.page, paginatedShift } 
     }
 
     async timeInDB() {
