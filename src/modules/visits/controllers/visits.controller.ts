@@ -30,7 +30,7 @@ export class VisitsController {
         action: 'create',
         resource: AppResources.VISIT,
     })
-    @Get('/allVisit/:idShift/:idVisit')
+    @Get('/allVisit/:idShift')
     async getVisit(@Param('idShift') shiftId: number, @Res() res, @User() user: UserEntity) {
         const visits = await this.visitService.findVisitsShift(shiftId, user)
         if(visits.length == 0) throw new HttpException({ success: false, status: HttpStatus.NOT_FOUND, message: "Visits not found" }, HttpStatus.NOT_FOUND)
