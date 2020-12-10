@@ -7,10 +7,11 @@ import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { ClientsModule } from './modules/clients/clients.module';
 import { ShiftsModule } from './modules/shifts/shifts.module';
-import { Shift, Client, User, Report, News, Workedhours } from './entities'
+import { Shift, Client, User, Report, News, Workedhours, Visit } from './entities'
 import { roles } from './app.roles';
 import { ReportsModule } from './modules/reports/reports.module';
 import { NewsModule } from './modules/news/news.module';
+import { VisitsModule } from './modules/visits/visits.module';
 
 @Module({
   imports: [  
@@ -23,7 +24,7 @@ import { NewsModule } from './modules/news/news.module';
         username: config.get<string>(DATABASE_USER),
         password: config.get<string>(DATABASE_PASS),
         database: config.get<string>(DATABASE_DB),
-        entities: [ Shift, Client, User, Report, News, Workedhours ],
+        entities: [ Shift, Client, User, Report, News, Workedhours, Visit ],
         autoLoadEntities: true,
         synchronize: true,
         logging: true,
@@ -36,7 +37,7 @@ import { NewsModule } from './modules/news/news.module';
       isGlobal: true,
       envFilePath: '.env'
     }),
-    AccessControlModule.forRoles(roles), AuthModule, UsersModule, ClientsModule, ShiftsModule, ReportsModule, NewsModule ],
+    AccessControlModule.forRoles(roles), AuthModule, UsersModule, ClientsModule, ShiftsModule, ReportsModule, NewsModule, VisitsModule ],
   controllers: [],
   providers: [],
 })

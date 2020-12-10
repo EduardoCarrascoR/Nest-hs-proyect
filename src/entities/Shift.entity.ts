@@ -15,6 +15,7 @@ import { News } from "./News.entity";
 import { User } from "./User.entity";
 import { shiftType, shiftState } from "../common/enums";
 import { Workedhours } from "./WorkedHours.entity";
+import { Visit } from "./Visit.entity";
 
 @Index("fk_shift_client1_idx", ["client"], {})
 @Entity("shift", { schema: "hs" })
@@ -64,6 +65,9 @@ export class Shift {
 
   @OneToMany(() => News, (news) => news.shiftsShifts)
   news: News[];
+
+  @OneToMany(() => Visit, (visit) => visit.shift)
+  visits: Visit[];
 
   @ManyToMany(() => User, (user) => user.shifts)
   @JoinTable()
