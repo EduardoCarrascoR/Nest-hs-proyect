@@ -52,17 +52,10 @@ export class VisitsService {
                 .where("guard.id = :user_id", { user_id: UserEntity.id })
                 .where("shift.shiftId = :shift_id", { shift_id: shiftId })
                 .getOne();
-
-            if (!shiftInDB) throw new HttpException({ success: false, status: HttpStatus.NOT_FOUND, message: 'Shift does not exists or unauthorized'}, HttpStatus.NOT_FOUND)
-            
+                
             visits = await transaction.find(Visit, { where: { shiftShiftId: shiftId }, relations: ["shift"]})
-            /* visits = await transaction.createQueryBuilder()
-            .select("visit")
-            .from(Visit, "visit")
-            .leftJoinAndSelect("visit.shift", "shift")
-            .where("shift.shiftId = :shift_id", { shift_id: shiftId })
-            .getMany(); */
-
+                
+            if (!shiftInDB) throw new HttpException({ success: false, status: HttpStatus.NOT_FOUND, message: 'Shift does not exists or unauthorized'}, HttpStatus.NOT_FOUND)
             if(!visits) throw new HttpException({ success: false, status: HttpStatus.NOT_FOUND, message: "Visits not found" }, HttpStatus.NOT_FOUND)
 
 
