@@ -13,6 +13,8 @@ roles
     .createOwn([AppResources.REPORT])
     .createOwn([AppResources.NEWS])
     .readOwn([AppResources.NEWS])
+    .createOwn([AppResources.VISIT])
+    .readOwn([AppResources.VISIT])
     // ADMIN ROLES
     .grant(AppRoles.Admin)
     .extend(AppRoles.Guard)
