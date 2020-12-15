@@ -45,7 +45,8 @@ export class VisitsService {
         let visits: Visit[];
 
         await getConnection().transaction(async transaction => {
-            const shiftInDB = await transaction.createQueryBuilder()
+            const shiftInDB = await transaction
+                .createQueryBuilder()
                 .select("shift")
                 .from(Shift, "shift")
                 .leftJoinAndSelect("shift.guards", "guard")
