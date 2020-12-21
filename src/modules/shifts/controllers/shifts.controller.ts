@@ -69,21 +69,11 @@ export class ShiftsController {
         resource: AppResources.SHIFT,
     })
     @Put('init/:id/:idClient')
-    async Initialized(@Param('id') id: number,@Param('idClient') idClient: number, @User() user: UserEntity, @Res() res, @Body() workedHour?: ShiftHoursWorkedDTO) {
+    async Initialized(@Param('id') id: number,@Param('idClient') idClient: number, @User() user: UserEntity, @Res() res) {
         let shift;
         if(!id) throw new HttpException({ success: false, status: HttpStatus.BAD_REQUEST, message: "Can't initialized shift id" }, HttpStatus.BAD_REQUEST)
-        if(this.rolesBuilder
-            .can(user.roles)
-            .updateAny(AppResources.SHIFT)
-            .granted
-        ) {
-            //es Admin
-            shift = await this.shiftService.shiftInicialized(id, idClient,undefined,workedHour.idGuard)
-        } else {
-            // es Guard
-            shift = await this.shiftService.shiftInicialized(id, idClient, user)
-        }
-        
+       
+        shift = await this.shiftService.shiftInicialized(id, idClient, user)
         return res.status(HttpStatus.OK).json({ success: true, message: 'Shift initialized', shift })
     }
 
@@ -93,20 +83,11 @@ export class ShiftsController {
         resource: AppResources.SHIFT,
     })
     @Put('final/:id/:idClient')
-    async Finalized(@Param('id') id: number, @Param('idClient') idClient: number, @User() user: UserEntity, @Res() res, @Body() workedHour?: ShiftHoursWorkedDTO) {
+    async Finalized(@Param('id') id: number, @Param('idClient') idClient: number, @User() user: UserEntity, @Res() res) {
         let shift;
         if(!id) throw new HttpException({ success: false, status: HttpStatus.BAD_REQUEST, message: "Can't initialized shift id" }, HttpStatus.BAD_REQUEST)
-        if(this.rolesBuilder
-            .can(user.roles)
-            .updateAny(AppResources.SHIFT)
-            .granted
-        ) {
-            //es Admin
-            shift = await this.shiftService.shiftFinalized(id, idClient,undefined,workedHour.idGuard)
-        } else {
-            // es Guard
-            shift = await this.shiftService.shiftFinalized(id, idClient, user)
-        }
+
+        shift = await this.shiftService.shiftFinalized(id, idClient, user)
         
         return res.status(HttpStatus.OK).json({ success: true, message: 'Shift finalized' })
     }

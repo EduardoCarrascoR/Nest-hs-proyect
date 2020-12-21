@@ -78,19 +78,19 @@ export class ShiftsService {
         return true;
     }
 
-    async shiftInicialized(shiftId: number, clientId: number, UserEntity?: User, user_id?: number) {
+    async shiftInicialized(shiftId: number, clientId: number, UserEntity?: User) {
         const shift = await this.shiftRepository.findOne({ shiftId, client: clientId },{ relations: ["guards"] })
         if(!shift) throw new HttpException({ success: false, status: HttpStatus.NOT_FOUND, message: 'Shift does not exists or unauthorized'},HttpStatus.NOT_FOUND)
 
-        if(!UserEntity) { 
+        if(shift.guards.some(u => u.id === UserEntity.id)) { 
             await getConnection().transaction(async transaction => {
                 const guardhoursDB: Workedhours = await transaction.findOne(Workedhours,{ 
-                    guardId: user_id,
+                    guardId: UserEntity.id,
                     shiftHoursId: shiftId
                 })
                 if(!guardhoursDB) {
                     const guardhours: Workedhours = await transaction.create(Workedhours,{ 
-                        guardId: user_id,
+                        guardId: UserEntity.id,
                         start: (await this.timeInDB()).time,
                         shiftHours: shift
                     })
@@ -98,66 +98,32 @@ export class ShiftsService {
                     return await guardhours;
                 } else throw new HttpException({ success: false, status: HttpStatus.CONFLICT, message: 'It isn`t possible to start this shift since it has already started'},HttpStatus.CONFLICT)
                 
-            })        
-        } else { 
-            if(shift.guards.some(u => u.id === UserEntity.id)) { 
-                await getConnection().transaction(async transaction => {
-                    const guardhoursDB: Workedhours = await transaction.findOne(Workedhours,{ 
-                        guardId: UserEntity.id,
-                        shiftHoursId: shiftId
-                    })
-                    if(!guardhoursDB) {
-                        const guardhours: Workedhours = await transaction.create(Workedhours,{ 
-                            guardId: UserEntity.id,
-                            start: (await this.timeInDB()).time,
-                            shiftHours: shift
-                        })
-                        await transaction.save(guardhours)
-                        return await guardhours;
-                    } else throw new HttpException({ success: false, status: HttpStatus.CONFLICT, message: 'It isn`t possible to start this shift since it has already started'},HttpStatus.CONFLICT)
-                    
-                })
-                
-            } else {
-                throw new HttpException({ success: false, status: HttpStatus.UNAUTHORIZED, message: 'You`re unauthorized to upate this shift'},HttpStatus.UNAUTHORIZED)
-            }
-        }    
+            })
+            
+        } else {
+            throw new HttpException({ success: false, status: HttpStatus.UNAUTHORIZED, message: 'You`re unauthorized to upate this shift'},HttpStatus.UNAUTHORIZED)
+        }
     }
 
-    async shiftFinalized(shiftId: number, clientId: number, UserEntity?: User, user_id?: number) {
+    async shiftFinalized(shiftId: number, clientId: number, UserEntity?: User) {
         const shift = await this.shiftRepository.findOne({ shiftId, client: clientId },{ relations: ["guards"] })
         if(!shift) throw new HttpException({ success: false, status: HttpStatus.NOT_FOUND, message: 'Shift does not exists or unauthorized'},HttpStatus.NOT_FOUND)
 
-        if(!UserEntity) { 
+        if(shift.guards.some(u => u.id === UserEntity.id)) { 
             await getConnection().transaction(async transaction => {
                 const guardhoursDB: Workedhours = await transaction.findOne(Workedhours,{ 
-                    guardId: user_id,
+                    guardId: UserEntity.id,
                     shiftHoursId: shiftId
                 })
                 if(!guardhoursDB || guardhoursDB.start === null ) throw new HttpException({ success: false, status: HttpStatus.NOT_FOUND, message: 'It isn`t possible to finish this shift since it has not already stared'},HttpStatus.NOT_FOUND)
                 if(guardhoursDB.finish === null) {
-                    await transaction.update(Workedhours, { shiftHoursId: shiftId, guardId: user_id }, { finish: (await this.timeInDB()).time })
+                    await transaction.update(Workedhours, { shiftHoursId: shiftId, guardId: UserEntity.id }, { finish: (await this.timeInDB()).time })
                     return await true;    
                 } else throw new HttpException({ success: false, status: HttpStatus.CONFLICT, message: 'It isn`t possible to finish this shift since it has already finished'},HttpStatus.CONFLICT)
             })
-
-        } else { 
-            if(shift.guards.some(u => u.id === UserEntity.id)) { 
-                await getConnection().transaction(async transaction => {
-                    const guardhoursDB: Workedhours = await transaction.findOne(Workedhours,{ 
-                        guardId: UserEntity.id,
-                        shiftHoursId: shiftId
-                    })
-                    if(!guardhoursDB || guardhoursDB.start === null ) throw new HttpException({ success: false, status: HttpStatus.NOT_FOUND, message: 'It isn`t possible to finish this shift since it has not already stared'},HttpStatus.NOT_FOUND)
-                    if(guardhoursDB.finish === null) {
-                        await transaction.update(Workedhours, { shiftHoursId: shiftId, guardId: UserEntity.id }, { finish: (await this.timeInDB()).time })
-                        return await true;    
-                    } else throw new HttpException({ success: false, status: HttpStatus.CONFLICT, message: 'It isn`t possible to finish this shift since it has already finished'},HttpStatus.CONFLICT)
-                })
-                
-            } else {
-                throw new HttpException({ success: false, status: HttpStatus.UNAUTHORIZED, message: 'You`re unauthorized to upate this shift'},HttpStatus.UNAUTHORIZED)
-            }
+            
+        } else {
+            throw new HttpException({ success: false, status: HttpStatus.UNAUTHORIZED, message: 'You`re unauthorized to upate this shift'},HttpStatus.UNAUTHORIZED)
         }
     }
 
