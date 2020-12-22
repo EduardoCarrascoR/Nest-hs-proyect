@@ -31,7 +31,7 @@ export class VisitsController {
         resource: AppResources.VISIT,
     })
     @Put('/out')
-    async outVisit(@Body() visitDTO: UpdateVisitDTO, @Param('visitId') visitId: number, @User() user: UserEntity, @Res() res) {
+    async outVisit(@Body() visitDTO: UpdateVisitDTO, @User() user: UserEntity, @Res() res) {
         const visit = await this.visitService.updateVisit(visitDTO, user);
         if(!visit) throw new HttpException({ success: false, status: HttpStatus.NOT_FOUND, message: 'Visit not Found'}, HttpStatus.NOT_FOUND)
         return await res.status(HttpStatus.ACCEPTED).json({ success: true, message: 'Visit out updated' })
