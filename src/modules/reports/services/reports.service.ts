@@ -49,6 +49,7 @@ export class ReportsService {
             reports = await transaction
                 .createQueryBuilder(Report, "report")
                 .leftJoinAndSelect("report.shiftShiftId", "shift")
+                .leftJoinAndSelect("shift.guards","guard")
                 .orderBy("report.reportId", "DESC")
                 .where(`shift.date BETWEEN '${beforeDay}' AND '${lastDay}'`)
                 .limit(10)

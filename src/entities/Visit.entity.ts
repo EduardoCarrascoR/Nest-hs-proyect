@@ -22,6 +22,12 @@ export class Visit {
 
   @Column("varchar", { name: "rut", length: 13 })
   rut: string;
+  
+  @Column({ name: "in", type: "time", nullable: true })
+  in: string | null;
+
+  @Column({ name: "out", type: "time", nullable: true })
+  out: string | null;
 
   @Column("int", { name: "shift_shift_id", nullable: true })
   shiftShiftId: number | null;

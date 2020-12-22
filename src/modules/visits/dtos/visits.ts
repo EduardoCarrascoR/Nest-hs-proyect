@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNumber, IsString } from "class-validator";
+import { IsMilitaryTime, IsNumber, IsString } from "class-validator";
 import { Shift } from "src/entities";
 
 export class CreateVisitDTO {
@@ -13,6 +13,9 @@ export class CreateVisitDTO {
     @IsString() @ApiProperty()
     readonly rut: string;
 
+    @IsMilitaryTime() @ApiProperty()
+    readonly in: string;
+    
     @IsNumber() @ApiProperty()
     readonly shiftId: number;
 
@@ -32,4 +35,16 @@ export class VisitDTO {
     @IsNumber() @ApiProperty()
     readonly shifts: Shift[];
 
+}
+
+export class UpdateVisitDTO {
+    
+    @IsNumber() @ApiProperty()
+    readonly shiftId: number;
+
+    @IsNumber() @ApiProperty()
+    readonly visitId: number;
+
+    @IsMilitaryTime() @ApiProperty()
+    readonly out?: string;
 }
