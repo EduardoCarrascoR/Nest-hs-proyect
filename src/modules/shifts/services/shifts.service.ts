@@ -15,7 +15,7 @@ export class ShiftsService {
     ) {}
 
     async findAllShift(): Promise<ShiftDTO[]> {
-        const shifts = await this.shiftRepository.find({ relations: ["guards", "workedhours", "clientClient"] })
+        const shifts = await this.shiftRepository.find({ relations: ["guards", "news", "workedhours", "clientClient"] })
         return shifts;
     }
 
