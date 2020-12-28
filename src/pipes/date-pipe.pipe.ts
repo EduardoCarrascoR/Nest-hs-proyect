@@ -1,5 +1,4 @@
 import { ArgumentMetadata, BadRequestException, Injectable, PipeTransform } from '@nestjs/common';
-import { validate } from 'class-validator';
 
 @Injectable()
 export class DatePipePipe implements PipeTransform<string> {
