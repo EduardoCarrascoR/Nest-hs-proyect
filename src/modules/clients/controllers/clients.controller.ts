@@ -32,7 +32,7 @@ export class ClientsController {
         resource: AppResources.CLIENT,
     })
     @Get('/reportClient/:clientId/date/:date')
-    async getReportsClient(@Param('clientId', ParseIntPipe) clientId: number, @Param('date', new DatePipePipe()) date, @Res() res) {
+    async getReportsClient(@Param('clientId', ParseIntPipe) clientId: number, @Param('date', new DatePipePipe()) date: Date, @Res() res) {
         if(!clientId) throw new HttpException({ success: false, status: HttpStatus.BAD_REQUEST, message: "Client Id not joined." }, HttpStatus.BAD_REQUEST)
         if(!date) throw new HttpException({ success: false, status: HttpStatus.BAD_REQUEST, message: "Date not joined." }, HttpStatus.BAD_REQUEST)
 
