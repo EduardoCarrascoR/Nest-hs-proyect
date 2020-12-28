@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsEmail, IsString } from "class-validator";
+import { IsDate, IsDateString, IsEmail, IsISO8601, IsString } from "class-validator";
 
 
 export class ClientDTO {
@@ -15,4 +15,10 @@ export class ClientDTO {
 
     @IsString() @ApiProperty()
     readonly address: string;
+}
+
+export class ReportClientDTO {
+
+    @IsISO8601()
+    date: Date;
 }

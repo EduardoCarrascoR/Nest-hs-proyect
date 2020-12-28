@@ -13,7 +13,6 @@ export class NewsService {
 
     async findAllNews(shiftId: number, UserEntity?: User) {
         const news = await this.newsRepository.find({ where: { shiftsShiftsId: shiftId }, relations: ["shiftsShifts"] })
-            console.log(news)
             return news;
         
     }
