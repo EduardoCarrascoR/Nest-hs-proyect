@@ -3,8 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Report, Shift, User, Workedhours } from '../../../entities';
 import { Brackets, Column, getConnection, Repository } from 'typeorm';
 import { CreateReportDTO } from '../dtos/report.dto';
-import { AppGateway } from 'src/app.gateway';
-import { time } from 'console';
 import { ShiftsService } from 'src/modules/shifts/services/shifts.service';
 
 @Injectable()
@@ -13,7 +11,6 @@ export class ReportsService {
         @InjectRepository(Report)
             private readonly reportRepository: Repository<Report>,
             private readonly ShiftService: ShiftsService,
-            private gateway: AppGateway
     ) {}
 
     async addReport(reportDTO: CreateReportDTO, UserEntity?: User) {
@@ -33,7 +30,6 @@ export class ReportsService {
                 time: (await this.ShiftService.timeInDB()).time
             })
             await transaction.save(report);
-            this.gateway.wss.emit('newReport', report)
             
             return await report;
         })
