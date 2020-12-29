@@ -43,13 +43,32 @@ export class ReportsService {
             let lastDay = (await this.dateInDB()).lastDay 
 
             reports = await transaction
-                .createQueryBuilder(Report, "report")
-                .leftJoinAndSelect("report.shiftShiftId", "shift")
-                .leftJoinAndSelect("shift.guards","guard")
+                .queryRunner
+                .query(`select user.user_id, concat(user.firstname,' ',user.lastname) as 'guard', user.phone, user.rut, report.type, report.time, shift.date, shift.shift_place as 'place' from report
+                inner join shift
+                on report.shift_shift_id=shift.shift_id
+                inner join user
+                on report.shift_guard_id=user.user_id
+                where shift.date BETWEEN '${beforeDay}' AND '${lastDay}'
+                limit 10`)
+            /* reports = await transaction
+                .createQueryBuilder()
+                .select("user.user_id")
+                .addSelect("concat(user.firstname,' ',user.lastname)", "guard")
+                .addSelect("user.phone")
+                .addSelect("user.rut")
+                .addSelect("report.type")
+                .addSelect("report.time")
+                .addSelect("shift.date")
+                .addSelect("shift.shiftPlace")
+                .from(Report, "report")
+                .innerJoin("report.shiftShiftId", "shift","shift.shift_id=report.shift_shift_id")
+                .innerJoinAndSelect(Shift,"shift","shift.shift_id=report.shift_shift_id")
+                .leftJoinAndSelect(User,"user","user.id=report.guardId")
                 .orderBy("report.reportId", "DESC")
                 .where(`shift.date BETWEEN '${beforeDay}' AND '${lastDay}'`)
                 .limit(10)
-                .getManyAndCount()
+                .getMany() */
 
             policeType = await transaction
                 .createQueryBuilder()
@@ -103,8 +122,7 @@ export class ReportsService {
         })
 
         return { 
-            reports: reports[0], 
-            count: reports[1], 
+            reports, 
             types: [
                 { y: policeType, label: 'Police' },
                 { y: ambulanceType, label: 'Ambulance' },
