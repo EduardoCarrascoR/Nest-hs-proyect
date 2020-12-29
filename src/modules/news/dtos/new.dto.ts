@@ -1,10 +1,11 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNumber, IsString } from "class-validator";
+import { IsNotEmpty, IsNumber, IsString } from "class-validator";
 import { Shift } from "src/entities";
 
 export class CreateNewDTO {
 
     @IsString()
+    @IsNotEmpty()
     @ApiProperty()
     readonly title: string;
     

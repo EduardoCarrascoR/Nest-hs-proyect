@@ -138,6 +138,7 @@ export class ShiftsService {
             .leftJoinAndSelect("shift.guards", "guard")
             .leftJoinAndSelect("shift.clientClient", "client")
             .leftJoinAndSelect("shift.workedhours", "workedhour")
+            .leftJoinAndSelect("shift.news","news")
             .skip(skip)
             .take(shiftPagination.limit)
             .getMany();

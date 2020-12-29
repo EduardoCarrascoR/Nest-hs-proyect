@@ -36,7 +36,7 @@ export class ReportsController {
         if(reports.reports.length == 0) throw new HttpException({ success: false, status: HttpStatus.NOT_FOUND, message: "Reports not found" }, HttpStatus.NOT_FOUND)
         if(reports.types.length == 0) throw new HttpException({ success: false, status: HttpStatus.NOT_FOUND, message: "Types of report not found" }, HttpStatus.NOT_FOUND)
 
-        return res.status(HttpStatus.ACCEPTED).json({ success: true, types: reports.types, count: reports.count, reports: reports.reports });
+        return res.status(HttpStatus.ACCEPTED).json({ success: true, types: reports.types, reports: reports.reports });
     }
 
 }

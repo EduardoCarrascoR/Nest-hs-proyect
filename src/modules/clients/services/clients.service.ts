@@ -57,7 +57,9 @@ export class ClientsService {
     async findAllreportClient(clientId, date){
         let reports/* , reportMEJORADO */; 
         await getConnection().transaction(async transaction => {
-            reports = transaction.queryRunner.query(`select client.client_id, concat(user.firstname, ' ', user.lastname) as 'guard', shift.date, report.time, shift.shift_place as 'place', report.type from client 
+            reports = transaction
+                .queryRunner
+                .query(`select client.client_id, concat(user.firstname, ' ', user.lastname) as 'guard', shift.date, report.time, shift.shift_place as 'place', report.type from client 
             inner join report
             on client.client_id=report.shift_client_client_id
             inner join shift
