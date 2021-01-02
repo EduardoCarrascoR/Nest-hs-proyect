@@ -1,8 +1,9 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { getConnection, Repository } from 'typeorm';
+import * as momentjs from "moment";
 import { UserDTO } from 'src/modules/users/dtos';
 import { UsersService } from 'src/modules/users/services/users.service';
-import { getConnection, Repository } from 'typeorm';
 import { Shift, User, Workedhours } from '../../../entities';
 import { CreateShiftDTO, ShiftDTO, ShiftHoursWorkedDTO, ShiftPaginationDTO } from '../dtos/shift.dto';
 
@@ -129,25 +130,118 @@ export class ShiftsService {
 
     async  getShiftWithPagination(shiftPagination: ShiftPaginationDTO) {
         const skip =  shiftPagination.limit*(shiftPagination.page -1);
-        let pages
+        let pages, paginatedShift, shiftCount, value, connection = getConnection()
+        let beforeDay = momentjs(shiftPagination.mes).startOf('month').format('YYYY-MM-DD');
+        let lastDay = momentjs(shiftPagination.mes).endOf('month').format('YYYY-MM-DD');
+        
+        if(!shiftPagination.client && !shiftPagination.mes) value = 1
+        if(shiftPagination.client && !shiftPagination.mes) value = 2
+        if(shiftPagination.mes && !shiftPagination.client) value = 3
+        if(shiftPagination.client && shiftPagination.mes) value = 4
+        
+        switch (value) {
+            case 1:
+                paginatedShift = await connection
+                    .createQueryBuilder()
+                    .select("shift")
+                    .from(Shift, "shift")
+                    .leftJoinAndSelect("shift.guards", "guard")
+                    .leftJoinAndSelect("shift.clientClient", "client")
+                    .leftJoinAndSelect("shift.workedhours", "workedhour")
+                    .leftJoinAndSelect("shift.news","news")
+                    .leftJoinAndSelect("shift.visits","visit")
+                    .orderBy("shift.date", "DESC")
+                    .skip(skip)
+                    .take(shiftPagination.limit)
+                    .getMany();
 
-        const paginatedShift = await getConnection()
-            .createQueryBuilder()
-            .select("shift")
-            .from(Shift, "shift")
-            .leftJoinAndSelect("shift.guards", "guard")
-            .leftJoinAndSelect("shift.clientClient", "client")
-            .leftJoinAndSelect("shift.workedhours", "workedhour")
-            .leftJoinAndSelect("shift.news","news")
-            .skip(skip)
-            .take(shiftPagination.limit)
-            .getMany();
-        const shiftCount = await getConnection()
-            .createQueryBuilder()
-            .select("shift")
-            .from(Shift, "shift")
-            .getCount();
+                shiftCount = await getConnection()
+                    .createQueryBuilder()
+                    .select("shift")
+                    .from(Shift, "shift")
+                    .getCount();
+                break;
+        
+            case 2:
+                paginatedShift = await connection
+                    .createQueryBuilder()
+                    .select("shift")
+                    .from(Shift, "shift")
+                    .leftJoinAndSelect("shift.guards", "guard")
+                    .leftJoinAndSelect("shift.clientClient", "client")
+                    .leftJoinAndSelect("shift.workedhours", "workedhour")
+                    .leftJoinAndSelect("shift.news","news")
+                    .leftJoinAndSelect("shift.visits","visit")
+                    .where(`client.client_id = :clientId`, { clientId: shiftPagination.client })
+                    .orderBy("shift.date", "DESC")
+                    .skip(skip)
+                    .take(shiftPagination.limit)
+                    .getMany();
 
+                shiftCount = await getConnection()
+                    .createQueryBuilder()
+                    .select("shift")
+                    .from(Shift, "shift")
+                    .leftJoinAndSelect("shift.clientClient", "client")
+                    .where(`client.client_id=:clientId`, { clientId: shiftPagination.client })
+                    .getCount();
+                break;
+                    
+            case 3:
+                paginatedShift = await connection
+                    .createQueryBuilder()
+                    .select("shift")
+                    .from(Shift, "shift")
+                    .leftJoinAndSelect("shift.guards", "guard")
+                    .leftJoinAndSelect("shift.clientClient", "client")
+                    .leftJoinAndSelect("shift.workedhours", "workedhour")
+                    .leftJoinAndSelect("shift.news","news")
+                    .leftJoinAndSelect("shift.visits","visit")
+                    .where(`shift.date BETWEEN '${beforeDay}' AND '${lastDay}'`)
+                    .orderBy("shift.date", "DESC")
+                    .skip(skip)
+                    .take(shiftPagination.limit)
+                    .getMany();
+
+                shiftCount = await getConnection()
+                    .createQueryBuilder()
+                    .select("shift")
+                    .from(Shift, "shift")
+                    .leftJoinAndSelect("shift.clientClient", "client")
+                    .where(`shift.date BETWEEN '${beforeDay}' AND '${lastDay}'`)
+                    .getCount();
+                break;
+        
+            case 4:
+                paginatedShift = await connection
+                    .createQueryBuilder()
+                    .select("shift")
+                    .from(Shift, "shift")
+                    .leftJoinAndSelect("shift.guards", "guard")
+                    .leftJoinAndSelect("shift.clientClient", "client")
+                    .leftJoinAndSelect("shift.workedhours", "workedhour")
+                    .leftJoinAndSelect("shift.news","news")
+                    .leftJoinAndSelect("shift.visits","visit")
+                    .where(`shift.date BETWEEN '${beforeDay}' AND '${lastDay}'`)
+                    .andWhere(`client.client_id=:clientId`, { clientId: shiftPagination.client })
+                    .orderBy("shift.date", "DESC")
+                    .skip(skip)
+                    .take(shiftPagination.limit)
+                    .getMany();
+
+                shiftCount = await getConnection()
+                    .createQueryBuilder()
+                    .select("shift")
+                    .from(Shift, "shift")
+                    .leftJoinAndSelect("shift.clientClient", "client")
+                    .where(`shift.date BETWEEN '${beforeDay}' AND '${lastDay}'`)
+                    .andWhere(`client.client_id=:clientId`, { clientId: shiftPagination.client })
+                    .orderBy("shift.date", "DESC")
+                    .getCount();
+                break;
+        
+        }
+        
         pages = await Math.ceil( shiftCount/ shiftPagination.limit);
         if (!paginatedShift) throw new HttpException({ success: false, status: HttpStatus.NOT_FOUND, message: 'Shifts does not exists or unauthorized'}, HttpStatus.NOT_FOUND)
         if (!shiftCount) throw new HttpException({ success: false, status: HttpStatus.NOT_FOUND, message: `Shifts doesn't exists or unauthorized`}, HttpStatus.NOT_FOUND)

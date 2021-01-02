@@ -74,7 +74,16 @@ export class ShiftPaginationDTO {
     @IsNumber()
     @ApiProperty()
     readonly limit: number;
-
+    
+    @IsNumber()
+    @IsOptional()
+    @ApiProperty()
+    readonly client?: number;
+    
+    @IsISO8601()
+    @IsOptional() 
+    @ApiProperty()
+    readonly mes?: Date;
 }
 
 export class ShiftHoursWorkedDTO {
