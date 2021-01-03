@@ -6,6 +6,7 @@ import { AppResources } from '../../../common/enums';
 import { CreateShiftDTO, ShiftDTO, ShiftHoursWorkedDTO, ShiftPaginationDTO } from '../dtos/shift.dto';
 import { ShiftsService } from '../services/shifts.service';
 import { InjectRolesBuilder, RolesBuilder } from 'nest-access-control';
+import { PdfService } from 'src/pdf/pdf.service';
 
 @ApiTags('Shifts')
 @Controller('shifts')
@@ -13,7 +14,9 @@ export class ShiftsController {
     constructor(
         private readonly shiftService: ShiftsService,
         @InjectRolesBuilder()
-        private readonly rolesBuilder: RolesBuilder
+        private readonly rolesBuilder: RolesBuilder,
+        private readonly pdfService: PdfService
+
     ) {}
         
     @Auth({
@@ -106,6 +109,26 @@ export class ShiftsController {
         if(shifts.paginatedShift.length == 0) throw new HttpException({ success: false, status: HttpStatus.NOT_FOUND, message: "Shifts data not found" }, HttpStatus.NOT_FOUND)
         
         return res.status(HttpStatus.ACCEPTED).json({ success: true, message: `Shifts page ${shifts.pageSelected}`, pages: shifts.pages, shifts: shifts.paginatedShift })
+    }
+
+    @Auth({
+        possession: 'any',
+        action: 'read',
+        resource: AppResources.SHIFT,
+    })
+    @Get("/pdf")
+    generatePdf(@Res() res, @User() user: UserEntity) {
+        this.pdfService.generatePdf(user)
+            .then((pdf)=>{
+                console.log("generado", {pdf})
+                res.status(HttpStatus.ACCEPTED)
+            })
+            .catch(err=>{ 
+                console.log(err)
+                res.status(HttpStatus.BAD_REQUEST)
+
+            })
+
     }
 
 }

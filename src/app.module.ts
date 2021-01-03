@@ -12,6 +12,7 @@ import { roles } from './app.roles';
 import { ReportsModule } from './modules/reports/reports.module';
 import { NewsModule } from './modules/news/news.module';
 import { VisitsModule } from './modules/visits/visits.module';
+import { PdfService } from './pdf/pdf.service';
 
 @Module({
   imports: [  
@@ -39,7 +40,7 @@ import { VisitsModule } from './modules/visits/visits.module';
     }),
     AccessControlModule.forRoles(roles), AuthModule, UsersModule, ClientsModule, ShiftsModule, ReportsModule, NewsModule, VisitsModule ],
   controllers: [],
-  providers: [],
+  providers: [PdfService],
 })
 export class AppModule {
   
