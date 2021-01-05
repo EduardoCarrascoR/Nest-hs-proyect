@@ -18,3 +18,13 @@ export class CreateReportDTO {
     readonly shiftId: number;
 
 }
+export class ReportDTO {
+
+    readonly type: reportType; // seguerencia que sea un enum con los tipos de repostes que hay (bomberos, carabineros, ambulancia, oficina1 y oficina2)
+
+    readonly time: string;
+    readonly guardId: number;
+    
+
+
+}

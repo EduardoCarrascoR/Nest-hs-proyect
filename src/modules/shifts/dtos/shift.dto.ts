@@ -1,8 +1,12 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsDate, IsEnum, IsISO8601, IsMilitaryTime, IsNumber, IsOptional, IsString, NotContains } from "class-validator";
+import { ClientDTO } from "src/modules/clients/dtos";
+import { UserDTO } from "../../users/dtos";
+import { NewsDTO } from "src/modules/news/dtos/new.dto";
 import { shiftState, shiftType } from "../../../common/enums";
 import { EnumToString } from "../../../common/helpers/enumToString";
-import { UserDTO } from "../../users/dtos";
+import { VisitDTO } from "src/modules/visits/dtos/visits";
+import { ReportDTO } from "src/modules/reports/dtos/report.dto";
 
 
 export class CreateShiftDTO {
@@ -62,6 +66,10 @@ export class ShiftDTO {
     readonly state: shiftState;
     
     readonly guards?: UserDTO[]
+    readonly clientClient?: ClientDTO
+    readonly news?: NewsDTO[]
+    readonly reports?: ReportDTO[]
+    readonly visits?: VisitDTO[]
 
 }
 
@@ -75,10 +83,10 @@ export class ShiftPaginationDTO {
     @ApiProperty()
     readonly limit: number;
     
-    @IsNumber()
+    @IsString()
     @IsOptional()
     @ApiProperty()
-    readonly client?: number;
+    readonly client?: string;
     
     @IsISO8601()
     @IsOptional() 

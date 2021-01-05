@@ -28,7 +28,7 @@ export class NewsDTO {
     readonly description: string;
      
     @IsNumber()
-    readonly clientId: number;
+    readonly newsId: number;
     
-    readonly shift: Shift;
+    readonly shiftsShifts?: Shift;
 }

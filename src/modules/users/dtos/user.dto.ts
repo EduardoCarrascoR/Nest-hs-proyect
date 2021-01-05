@@ -33,6 +33,7 @@ export class CreateUserDTO {
 }
 
 export class UserDTO {
+    readonly id: number;
     readonly firstname: string;
     readonly lastname: string;
     readonly roles: string[];

@@ -1,11 +1,16 @@
-import { Body, Controller, Get, HttpException, HttpStatus, Param, Post, Put, Res } from '@nestjs/common';
+import { Body, Controller, Get, HttpException, HttpStatus, Logger, Param, Post, Put, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { User as UserEntity} from '../../../entities';
+import { Shift, User as UserEntity} from '../../../entities';
 import { Auth, User } from '../../../common/decorators';
 import { AppResources } from '../../../common/enums';
+import * as fs from "fs";
 import { CreateShiftDTO, ShiftDTO, ShiftHoursWorkedDTO, ShiftPaginationDTO } from '../dtos/shift.dto';
 import { ShiftsService } from '../services/shifts.service';
+import { EMAIL_PASS, EMAIL_REPORT } from "../../../config/constants";
 import { InjectRolesBuilder, RolesBuilder } from 'nest-access-control';
+import { PdfService } from 'src/pdf/pdf.service';
+import * as nodemailer from "nodemailer";
+import { ConfigService } from '@nestjs/config';
 
 @ApiTags('Shifts')
 @Controller('shifts')
@@ -13,7 +18,10 @@ export class ShiftsController {
     constructor(
         private readonly shiftService: ShiftsService,
         @InjectRolesBuilder()
-        private readonly rolesBuilder: RolesBuilder
+        private readonly rolesBuilder: RolesBuilder,
+        private readonly pdfService: PdfService,
+        private readonly config: ConfigService 
+
     ) {}
         
     @Auth({
@@ -106,6 +114,23 @@ export class ShiftsController {
         if(shifts.paginatedShift.length == 0) throw new HttpException({ success: false, status: HttpStatus.NOT_FOUND, message: "Shifts data not found" }, HttpStatus.NOT_FOUND)
         
         return res.status(HttpStatus.ACCEPTED).json({ success: true, message: `Shifts page ${shifts.pageSelected}`, pages: shifts.pages, shifts: shifts.paginatedShift })
+    }
+
+    @Auth({
+        possession: 'any',
+        action: 'read',
+        resource: AppResources.SHIFT,
+    })
+    @Get("/pdf/:shiftId/client/:clientId")
+    async generatePdf(@Param('shiftId') shiftId: number, @Param('clientId') clientId: number, @Res() res, @User() user: UserEntity) {
+        const shift = await this.shiftService.getShiftById(shiftId, clientId)
+        const pdf:any  = await this.pdfService.generatePdf(user, shift)
+        if(pdf.error) throw new HttpException({ success: false, status: HttpStatus.BAD_REQUEST, message: "Error al crear pdf" }, HttpStatus.BAD_REQUEST)
+        await this.pdfService.sendMailPdf(pdf.filename, shift.clientClient, shift.date)
+        
+        return res.status(HttpStatus.ACCEPTED).json({ success: true, message: "Email send" })
+        
+
     }
 
 }
