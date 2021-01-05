@@ -15,8 +15,8 @@ export class ShiftsService {
             private readonly userService: UsersService,
     ) {}
 
-    async findAllShift(): Promise<ShiftDTO[]> {
-        const shifts = await this.shiftRepository.find({ relations: ["guards", "news", "workedhours", "clientClient"] })
+    async findAllShift() {
+        const shifts: Shift[] = await this.shiftRepository.find({ relations: ["guards", "news", "workedhours", "clientClient", "reports"] })
         return shifts;
     }
 
@@ -172,7 +172,7 @@ export class ShiftsService {
                     .leftJoinAndSelect("shift.workedhours", "workedhour")
                     .leftJoinAndSelect("shift.news","news")
                     .leftJoinAndSelect("shift.visits","visit")
-                    .where(`client.client_id = :clientId`, { clientId: shiftPagination.client })
+                    .where(`client.name = :clientName`, { clientName: shiftPagination.client })
                     .orderBy("shift.date", "DESC")
                     .skip(skip)
                     .take(shiftPagination.limit)
@@ -183,7 +183,7 @@ export class ShiftsService {
                     .select("shift")
                     .from(Shift, "shift")
                     .leftJoinAndSelect("shift.clientClient", "client")
-                    .where(`client.client_id=:clientId`, { clientId: shiftPagination.client })
+                    .where(`client.name=:clientName`, { clientName: shiftPagination.client })
                     .getCount();
                 break;
                     
@@ -223,7 +223,7 @@ export class ShiftsService {
                     .leftJoinAndSelect("shift.news","news")
                     .leftJoinAndSelect("shift.visits","visit")
                     .where(`shift.date BETWEEN '${beforeDay}' AND '${lastDay}'`)
-                    .andWhere(`client.client_id=:clientId`, { clientId: shiftPagination.client })
+                    .andWhere(`client.name=:clientName`, { clientName: shiftPagination.client })
                     .orderBy("shift.date", "DESC")
                     .skip(skip)
                     .take(shiftPagination.limit)
@@ -246,6 +246,17 @@ export class ShiftsService {
         if (!paginatedShift) throw new HttpException({ success: false, status: HttpStatus.NOT_FOUND, message: 'Shifts does not exists or unauthorized'}, HttpStatus.NOT_FOUND)
         if (!shiftCount) throw new HttpException({ success: false, status: HttpStatus.NOT_FOUND, message: `Shifts doesn't exists or unauthorized`}, HttpStatus.NOT_FOUND)
         return { pages, pageSelected: shiftPagination.page, paginatedShift } 
+    }
+
+    async getShiftById(shiftId: number, client: number) {
+        let shift: Shift
+        const connection = getConnection()
+        await connection.transaction( async transaction => {
+            shift = await transaction.findOne(Shift, { shiftId, client },{ relations: ["clientClient", "guards", "news", "reports", "visits"] })
+
+        })
+        if(!shift) throw new HttpException({ success: false, status: HttpStatus.BAD_REQUEST, message: "Shift not found." }, HttpStatus.BAD_REQUEST)
+        return shift
     }
 
     async timeInDB() {

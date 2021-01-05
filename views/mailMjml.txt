@@ -1,0 +1,91 @@
+<mjml>
+  <mj-head>
+    <mj-title>Discount Light</mj-title>
+    <mj-preview>Pre-header Text</mj-preview>
+    <mj-attributes>
+      <mj-all font-family="'Helvetica Neue', Helvetica, Arial, sans-serif"></mj-all>
+      <mj-text font-weight="400" font-size="16px" color="#000000" line-height="24px" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif"></mj-text>
+    </mj-attributes>
+    <mj-style inline="inline">
+      .body-section { -webkit-box-shadow: 1px 4px 11px 0px rgba(0, 0, 0, 0.15); -moz-box-shadow: 1px 4px 11px 0px rgba(0, 0, 0, 0.15); box-shadow: 1px 4px 11px 0px rgba(0, 0, 0, 0.15); }
+    </mj-style>
+    <mj-style inline="inline">
+      .text-link { color: #5e6ebf }
+    </mj-style>
+    <mj-style inline="inline">
+      .footer-link { color: #888888 }
+    </mj-style>
+
+  </mj-head>
+  <mj-body background-color="#E7E7E7" width="600px">
+    <mj-section full-width="full-width" background-color="#001039" padding-bottom="0">
+      <mj-column width="100%">
+        
+        <mj-image src="https://lh3.googleusercontent.com/fife/ABSRlIre7oqdRjUjMO32K-L4yiT0MneWvf0rN0r8ClRKJUnhbEY9yfTpY1a1bupMV8n2sy-oCrKLXvddi2oXWqroEeSmKc0HraYI10m8d_DeG7Ia0PgNhxQWIVoBYmw503XXBer_Zk9Qfy-0woTBQaaCMI5AN1eIlKYCawBdYMbOrNNWaFy6lgwp5AQqdefYxdA478oyCrd8RYzgwV4iWw5xGqXlOnx7Fxx6_DCw2rhsxdKvf1QlSEdTwDM282qlijVyrxKxnfTSOgqfsPVrFLsyGcozlZTmK240lO3IBbvTwpQMzGxchSi48_auxjJGuo5ChMtZocYjBPCbO0fz1infB1MhV6xu52eHevvXi9FT9iuD4fOi_B9SPz4SxXTDvN-qOhwPolvtqLvBGDnZVoGH4HgBJbRqppAmMkBVFnMAPdENlSxanxtYj2pLw_PRslG-iyEyT7tdAoD8RtNtDHQk2W0JFSnclx_QC65X1k0hxlmcMALTmxghiEYp2cW89R-QBlk_H8HkdGyOBOnTGDhYsM3oP8ZpOmr56Cf4vhyqjQRwpTv6Hjelt6wmv6MUj4wEAQ0hsTx0LlWJCzawMyC3Tk_TacLxCl7Wkmov-_IaL-WYF1OdvHqAezj-h11Jx9edJBNA74IbZ4WeoG3-DE2KgwsL_VHwy6v36E4m01pMYqM04WORBAuOt8QuqxTzrbZ3NWIiQ3zfHW5wcbT5DBPYYIqowSOSHQhUvQ=w1325-h666-ft" width="600px" alt="" padding="0" href="https://google.com" />
+      </mj-column>
+    </mj-section>
+    <mj-wrapper padding-top="0" padding-bottom="0" css-class="body-section">
+      <mj-section background-color="#ffffff" padding-left="15px" padding-right="15px">
+        <mj-column width="100%">
+          <mj-text color="#212b35" font-weight="bold" font-size="20px">
+            Informe de la ronda asignada el dia December 20th
+          </mj-text>
+          <mj-text color="#637381" font-size="16px">
+            Saludos Jane,
+          </mj-text>
+          <mj-text color="#637381" font-size="16px">
+            Se adjunta el informe detallado de la ronda solicitada.
+          </mj-text>
+      <mj-section background-color="#ffffff" padding-left="15px" padding-right="15px" padding-top="0">
+        <mj-column width="100%">
+          <mj-divider border-color="#DFE3E8" border-width="1px" />
+        </mj-column>
+      </mj-section>
+      <mj-section background-color="#ffffff" padding="0 15px 0 15px">
+        <mj-column width="100%">
+          <mj-text color="#212b35" font-weight="bold" font-size="20px" padding-bottom="0">
+            Saludos cordiales!
+          </mj-text>
+          <mj-text color="#637381" font-size="16px">
+            Empresa High Security.
+          </mj-text>
+        </mj-column>
+      </mj-section>
+      <mj-section background-color="#ffffff" padding-left="15px" padding-right="15px">
+        <mj-column width="50%">
+          <mj-text color="#212b35" font-size="12px" text-transform="uppercase" font-weight="bold" padding-bottom="0">
+            Dirección
+          </mj-text>
+          <mj-text color="#637381" font-size="13px" padding-top="0">
+            Av. Nueva Providencia 1363, 
+            <br/> Providencia, Región Metropolitana
+          </mj-text>
+        </mj-column>
+        <mj-column width="50%">
+          <mj-text color="#212b35" font-size="12px" text-transform="uppercase" font-weight="bold" padding-bottom="0">
+            Contacto
+          </mj-text>
+          <mj-text color="#637381" font-size="13px" padding-top="0">
+            (2) 2236 9539, 
+            <br/> info@highsecurity.cl
+          </mj-text>
+        </mj-column>
+      </mj-section>
+      
+    </mj-wrapper>
+
+    <mj-wrapper full-width="full-width">
+      <mj-section>
+        <mj-column width="100%" padding="0">
+          <mj-text color="#445566" font-size="11px" align="center" line-height="16px">
+            You are receiving this email because you registered with High Security Accountants. (Av. Nueva Providencia 1363, Providencia, Región Metropolitana) and agreed to receive emails from us regarding new features, events and special offers.
+          </mj-text>
+          <mj-text color="#445566" font-size="11px" align="center" line-height="16px">
+            &copy; High Security, Todos los derechos Reservados.
+          </mj-text>
+        </mj-column>
+      </mj-section>
+    </mj-wrapper>
+
+  </mj-body>
+</mjml>

@@ -33,7 +33,7 @@ export class VisitDTO {
     readonly rut: string;
 
     @IsNumber() @ApiProperty()
-    readonly shifts: Shift[];
+    readonly shift?: Shift[];
 
 }
 

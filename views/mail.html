@@ -1,187 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import * as pdf from "html-pdf";
-import * as moment from "moment";
-import * as nodemailer from "nodemailer";
-import * as fs from "fs";
-import { EMAIL_PASS, EMAIL_REPORT } from "../config/constants";
-import { Shift, User } from 'src/entities';
-import { UserDTO } from 'src/modules/users/dtos';
-import { getConnection, getRepository } from 'typeorm';
-import { ShiftDTO } from 'src/modules/shifts/dtos/shift.dto';
-
-@Injectable()
-export class PdfService {
-    
-    constructor(
-        private readonly config: ConfigService 
-    ) {}
-
-    generatePdf(user: User, shift) {
-        let contentPDF = `
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <!-- Compiled and minified CSS -->
-            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
-            <style type="text/css">
-              .hs-color {
-                background-color: #001039;
-              }
-        
-              .hs-text-color {
-                color: #001039;
-              }
-
-              img.report-error {
-                height: 30vh;
-              } 
-            </style>
-            <title>Pdf</title>
-        </head>
-        <body class="container">
-          <div class="row">
-              <div class="col s12 m12">
-                <div class="card-panel grey lighten-4 z-depth-1">
-                  <h5 class="center hs-text-color">Reporte del turno</h5>
-                  <br>
-                  <br>
-                  <div class="card-panel grey lighten-5 z-depth-1">
-                    <span class="hs-text-color">Cliente: ${shift.clientClient.name}</span>
-                    <br>
-                    <span class="hs-text-color">Direccion: ${shift.clientClient.address}</span>
-                  </div>
-                  <br>
-        `;
-        // Llenado tabla Reportes
-        if(shift.reports.length > 0) {
-          contentPDF+=`
-                  <h5 class="center">Reportes</h5>
-                  <table class="z-depth-2">
-                    <thead class="hs-color">
-                      <tr>
-                        <th class="white-text">Tipo</th>
-                        <th class="white-text">Hora</th>
-                        <th class="white-text">Guardia</th>
-                      </tr>
-                    </thead>
-                    <tbody class="white">`
-
-          for(let data of shift.reports){
-            contentPDF+= `
-                      <tr>
-                        <td>${data.type}</td>
-                        <td>${(data.time || 'Sin registrar')}</td>`
-            for(const guard of shift.guards) {
-              if(guard.id === data.guardId){
-                contentPDF+=`
-                        <td>${(guard.firstname+` `+guard.lastname || 'Sin registrar')}</td>
-                      </tr>`
-              }
-            }
-          }
-
-          contentPDF+=`
-                    </tbody>
-                  </table>
-                  <br>`
-        } else {
-          contentPDF+=`
-                  <br>`
-        }
-        // Llenado tabla Libro de novedades
-        if(shift.news.length > 0) {
-          contentPDF+=`
-                  <h5 class="center">Libro de novedades</h5>
-                  <table class="z-depth-2">
-                    <thead class="hs-color">
-                      <tr>
-                        <th class="white-text">Título</th>
-                        <th class="white-text">Descripción</th>
-                      </tr>
-                    </thead>
-                    <tbody class="white">`
-
-          for(let data of shift.news){
-            contentPDF+= `
-                      <tr>
-                        <td>${(data.title || 'Sin registrar')}</td>
-                        <td>${(data.description || 'Sin registrar')}</td>
-                      </tr>`
-          }
-
-          contentPDF+=`
-                    </tbody>
-                  </table>
-                  <br>`
-        } else {
-          contentPDF+=`
-                  <br>`
-        }
-        // Llenado tabla Visitas
-        if(shift.visits.length > 0) {
-          contentPDF+=`
-          <h5 class="center">Listado de visitas</h5>
-                  <table class="z-depth-2">
-                    <thead class="hs-color">
-                      <tr>
-                        <th class="white-text">Nombre</th>
-                        <th class="white-text">Patente</th>
-                        <th class="white-text">Rut</th>
-                        <th class="white-text">Entrada</th>
-                        <th class="white-text">Salida</th>
-                      </tr>
-                    </thead>
-                    <tbody class="white">`
-
-          for(let data of shift.visits){
-            contentPDF+= `
-                      <tr>
-                        <td>${data.name}</td>
-                        <td>${(data.patent || 'Sin registrar')}</td>
-                        <td>${(data.rut || 'Sin registrar')}</td>
-                        <td>${data.in}</td>
-                        <td>${(data.out || 'Sin registrar')}</td>`
-            
-          }
-
-          contentPDF+=`
-                    </tbody>
-                  </table>
-                  <br>`
-        } else {
-          contentPDF+=`
-                  <br>`
-        }
-        contentPDF+=`
-              </div>
-            </div>
-          </div>
-          <!-- Compiled and minified JavaScript -->
-          <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-        </body>
-        </html>`
-        
-        return new Promise((resolve, reject) => {
-            pdf.create(contentPDF).toFile(`./pdfs/reporte_${moment().format('DD-MM-YYYY_hh-mm-ssa')}-${user.id}.pdf`, (err, res) => {
-                
-                if(err) {
-                    reject(err)
-                } else {
-                    resolve(res)
-                }
-            });
-        }) 
-        
-    }
-
-    async sendMailPdf(pdfFileName, client, date) {
-        await moment.locale('es')
-        const dateFormat = await moment(date).format("DD MMM YYYY")
-        const contentEmailHTML = `
-        <!doctype html>
+<!doctype html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
 
 <head>
@@ -373,12 +190,12 @@ export class PdfService {
                           <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
                             <tr>
                               <td align="left" style="font-size:0px;padding:10px 25px;word-break:break-word;">
-                                <div style="font-family:'Helvetica Neue', Helvetica, Arial, sans-serif;font-size:20px;font-weight:bold;line-height:24px;text-align:left;color:#212b35;">Informe de la ronda asignada el dia <span>${dateFormat}</span></div>
+                                <div style="font-family:'Helvetica Neue', Helvetica, Arial, sans-serif;font-size:20px;font-weight:bold;line-height:24px;text-align:left;color:#212b35;">Informe de la ronda asignada el dia <span id="dateData"></span></div>
                               </td>
                             </tr>
                             <tr>
                               <td align="left" style="font-size:0px;padding:10px 25px;word-break:break-word;">
-                                <div style="font-family:'Helvetica Neue', Helvetica, Arial, sans-serif;font-size:16px;font-weight:400;line-height:24px;text-align:left;color:#637381;">Saludos ${client.name},</div>
+                                <div style="font-family:'Helvetica Neue', Helvetica, Arial, sans-serif;font-size:16px;font-weight:400;line-height:24px;text-align:left;color:#637381;">Saludos Jane,</div>
                               </td>
                             </tr>
                             <tr>
@@ -719,43 +536,17 @@ export class PdfService {
       </tbody>
     </table>
   </div>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+  <script src="https://momentjs.com/downloads/moment-with-locales.min.js"></script>
+  <script>
+    moment.locale('es')
+    $(document).ready(function() {
+      console.log("entro")
+      var date = moment("2020-12-31").format("DD MMM YYYY");
+      document.getElementById('dateData').innerHTML = (date);
+    });
+    
+  </script>
 </body>
 
-</html>`;
-        
-        let messageOptions = {
-            from: "High Security <reportes@highsecurity.cl>",
-            to: `${client.email}`,
-            subject: "Reportes HighSecutiry",
-            html: contentEmailHTML,
-            attachments: [{
-                filename: "reporte.pdf",
-                path: pdfFileName
-            }]
-        }
-        const transporter = nodemailer.createTransport({
-            host: "mail.highsecurity.cl",
-            port: 587,
-            secure: false, // true for 465, false for other ports
-            auth: {
-              user: this.config.get<string>(EMAIL_REPORT), // generated ethereal user
-              pass: this.config.get<string>(EMAIL_PASS), // generated ethereal password
-            },
-            tls: {
-                rejectUnauthorized: false
-            }
-        });
-        transporter.sendMail(messageOptions, async (error, info) => {
-            if (error) {
-                
-                return console.log(error);
-            }
-            console.log('Message sent: %s', info.messageId)
-            await fs.unlinkSync(pdfFileName)
-        })
-        
-        return true
-        
-    }
-
-}
+</html>

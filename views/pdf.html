@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Compiled and minified CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <style type="text/css">
+      .hs-color {
+        background-color: #001039;
+      }
+
+      .hs-text-color {
+        color: #001039;
+      }
+      img.report-error {
+        height: 30vh;
+      } 
+    </style>
+    <title>Pdf</title>
+
+</head>
+<body class="container">
+  <div class="row">
+    <div class="col s12 m12">
+      <div class="card-panel grey lighten-4 z-depth-1">
+        <h4 class="center hs-text-color">Informe de turno</h4>
+        <br>
+        <br>
+        <div class="card-panel grey lighten-5 z-depth-1">
+          <span class="hs-text-color">Cliente: ${shift.clientClient.name}</span>
+          <br>
+          <span class="hs-text-color">Direccion: ${shift.clientClient.address}</span>
+        </div>
+        <br>
+        <!-- <table class="z-depth-2">
+          <thead class="hs-color">
+            <tr>
+                <th class="white-text">Tipo</th>
+                <th class="white-text">Hora</th>
+                <th class="white-text">Guardia</th>
+            </tr>
+          </thead>
+      
+          <tbody class="white">
+            <tr>
+              <td>${data.type}</td>
+              <td>${(data.time || 'Sin registrar')}</td>
+              <td>${(guard.firstname+` `+guard.lastname || 'Sin registrar')}</td>
+            </tr>
+          </tbody>
+        </table> -->
+        <br>
+        <h5 class="center">Libro de novedades</h5>
+        <table class="z-depth-2">
+          <thead class="hs-color">
+            <tr>
+              <th class="white-text">Título</th>
+              <th class="white-text">Descripción</th>
+            </tr>
+          </thead>
+
+          <tbody class="white">
+            <tr>
+              <td>${(data.title || 'Sin registrar')}</td>
+              <td>${(data.description || 'Sin registrar')}</td>
+            </tr>
+          </tbody>
+        </table>
+        <br>
+        <h5 class="center">Listado de visitas</h5>
+        <table class="z-depth-2">
+          <thead class="hs-color">
+            <tr>
+              <th class="white-text">Nombre</th>
+              <th class="white-text">Patente</th>
+              <th class="white-text">Rut</th>
+              <th class="white-text">Entrada</th>
+              <th class="white-text">Salida</th>
+            </tr>
+          </thead>
+
+          <tbody class="white">
+            <tr>
+              <td>${data.name}</td>
+              <td>${(data.patent || 'Sin registrar')}</td>
+              <td>${(data.rut || 'Sin registrar')}</td>
+              <td>${data.in}</td>
+              <td>${(data.out || 'Sin registrar')}</td>
+            </tr>
+          </tbody>
+        </table>
+        <br><br>
+      </div>
+    </div>
+  </div>
+    <!-- Compiled and minified JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+</body>
+</html>
