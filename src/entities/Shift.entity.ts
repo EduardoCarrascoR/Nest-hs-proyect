@@ -16,6 +16,7 @@ import { User } from "./User.entity";
 import { shiftType, shiftState } from "../common/enums";
 import { Workedhours } from "./WorkedHours.entity";
 import { Visit } from "./Visit.entity";
+import { GuardsLocation } from "./GuardsLocation.entity";
 
 @Index("fk_shift_client1_idx", ["client"], {})
 @Entity("shift", { schema: "hs" })
@@ -68,6 +69,9 @@ export class Shift {
 
   @OneToMany(() => Visit, (visit) => visit.shift)
   visits: Visit[];
+
+  @OneToMany(() => GuardsLocation, (guardsLocation) => guardsLocation.shift)
+  guardLocation: GuardsLocation[];
 
   @ManyToMany(() => User, (user) => user.shifts)
   @JoinTable()

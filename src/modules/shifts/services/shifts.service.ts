@@ -2,16 +2,17 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { getConnection, Repository } from 'typeorm';
 import * as momentjs from "moment";
-import { UserDTO } from 'src/modules/users/dtos';
+import { GuardLocation, UserDTO } from 'src/modules/users/dtos';
 import { UsersService } from 'src/modules/users/services/users.service';
-import { Shift, User, Workedhours } from '../../../entities';
+import { GuardsLocation, Shift, User, Workedhours } from '../../../entities';
 import { CreateShiftDTO, ShiftDTO, ShiftHoursWorkedDTO, ShiftPaginationDTO } from '../dtos/shift.dto';
 
 @Injectable()
 export class ShiftsService {
     constructor(
         @InjectRepository(Shift)
-            private readonly shiftRepository: Repository<Shift>,
+        private readonly shiftRepository: Repository<Shift>,
+        @InjectRepository(GuardsLocation)
             private readonly userService: UsersService,
     ) {}
 
@@ -124,11 +125,11 @@ export class ShiftsService {
             })
             
         } else {
-            throw new HttpException({ success: false, status: HttpStatus.UNAUTHORIZED, message: 'You`re unauthorized to upate this shift'},HttpStatus.UNAUTHORIZED)
+            throw new HttpException({ success: false, status: HttpStatus.UNAUTHORIZED, message: 'You`re unauthorized to update this shift'},HttpStatus.UNAUTHORIZED)
         }
     }
 
-    async  getShiftWithPagination(shiftPagination: ShiftPaginationDTO) {
+    async getShiftWithPagination(shiftPagination: ShiftPaginationDTO) {
         const skip =  shiftPagination.limit*(shiftPagination.page -1);
         let pages, paginatedShift, shiftCount, value, connection = getConnection()
         let beforeDay = momentjs(shiftPagination.mes).startOf('month').format('YYYY-MM-DD');
@@ -150,6 +151,7 @@ export class ShiftsService {
                     .leftJoinAndSelect("shift.workedhours", "workedhour")
                     .leftJoinAndSelect("shift.news","news")
                     .leftJoinAndSelect("shift.visits","visit")
+                    .leftJoinAndSelect("shift.guardLocation","guardLocation")
                     .orderBy("shift.date", "DESC")
                     .skip(skip)
                     .take(shiftPagination.limit)
@@ -172,6 +174,7 @@ export class ShiftsService {
                     .leftJoinAndSelect("shift.workedhours", "workedhour")
                     .leftJoinAndSelect("shift.news","news")
                     .leftJoinAndSelect("shift.visits","visit")
+                    .leftJoinAndSelect("shift.guardLocation","guardLocation")
                     .where(`client.name = :clientName`, { clientName: shiftPagination.client })
                     .orderBy("shift.date", "DESC")
                     .skip(skip)
@@ -197,6 +200,7 @@ export class ShiftsService {
                     .leftJoinAndSelect("shift.workedhours", "workedhour")
                     .leftJoinAndSelect("shift.news","news")
                     .leftJoinAndSelect("shift.visits","visit")
+                    .leftJoinAndSelect("shift.guardLocation","guardLocation")
                     .where(`shift.date BETWEEN '${beforeDay}' AND '${lastDay}'`)
                     .orderBy("shift.date", "DESC")
                     .skip(skip)
@@ -222,6 +226,7 @@ export class ShiftsService {
                     .leftJoinAndSelect("shift.workedhours", "workedhour")
                     .leftJoinAndSelect("shift.news","news")
                     .leftJoinAndSelect("shift.visits","visit")
+                    .leftJoinAndSelect("shift.guardLocation","guardLocation")
                     .where(`shift.date BETWEEN '${beforeDay}' AND '${lastDay}'`)
                     .andWhere(`client.name=:clientName`, { clientName: shiftPagination.client })
                     .orderBy("shift.date", "DESC")
@@ -241,7 +246,6 @@ export class ShiftsService {
                 break;
         
         }
-        
         pages = await Math.ceil( shiftCount/ shiftPagination.limit);
         if (!paginatedShift) throw new HttpException({ success: false, status: HttpStatus.NOT_FOUND, message: 'Shifts does not exists or unauthorized'}, HttpStatus.NOT_FOUND)
         if (!shiftCount) throw new HttpException({ success: false, status: HttpStatus.NOT_FOUND, message: `Shifts doesn't exists or unauthorized`}, HttpStatus.NOT_FOUND)
@@ -257,6 +261,85 @@ export class ShiftsService {
         })
         if(!shift) throw new HttpException({ success: false, status: HttpStatus.BAD_REQUEST, message: "Shift not found." }, HttpStatus.BAD_REQUEST)
         return shift
+    }
+
+    async setLocation(shiftId: number, clientId: number, userId: number, GuardLocation: GuardLocation, userEntity?: User) {
+        const conection = getConnection()
+        let location: boolean, guardLocation: GuardLocation;
+        const shift = await this.shiftRepository.findOne({ shiftId, client: clientId },{ relations: ["guards"] })
+        if(!shift) throw new HttpException({ success: false, status: HttpStatus.NOT_FOUND, message: 'Shift does not exists or unauthorized'},HttpStatus.NOT_FOUND)
+
+        if(shift.guards.some(u => u.id === userEntity.id)) { 
+            await conection.transaction( async transaction =>{
+                const guardhoursDB: Workedhours = await transaction.findOne(Workedhours,{ 
+                    guardId: userEntity.id,
+                    shiftHoursId: shiftId
+                })
+                const userInDB: User = await transaction.findOne(User, { id:userId })
+                    .then(u => !userEntity ? u : !!u && userEntity.id === u.id ? u : null)
+                if(userInDB){
+                    if(!guardhoursDB || guardhoursDB.start === null ) throw new HttpException({ success: false, status: HttpStatus.NOT_FOUND, message: 'It isn`t possible to save location this shift since it has not already stared'},HttpStatus.NOT_FOUND)
+                    if(guardhoursDB.finish === null) {
+
+                        const guardLocationInDb = await transaction.findOne(GuardsLocation, { shiftId, clientId, userId })
+                        if (guardLocationInDb === undefined) {
+                            let timeLocation = (await this.timeInDB()).time
+                            guardLocation = await transaction.create(GuardsLocation, { 
+                                shiftId, 
+                                clientId, 
+                                userId: userEntity.id, 
+                                location: GuardLocation.location, 
+                                timeLocation
+                            })
+                            await transaction.save(GuardsLocation, guardLocation)
+                            location = true;
+                        } else {
+                            if (guardLocationInDb) {
+                                await transaction.update(GuardsLocation, { shiftId, clientId, userId }, { location: GuardLocation.location, timeLocation: (await this.timeInDB()).time } )
+                                guardLocation = null;
+                                location = false;
+                            } else throw new HttpException({ success: false, status: HttpStatus.CONFLICT, message: 'It isn`t possible'},HttpStatus.CONFLICT)
+                        }
+                    } else throw new HttpException({ success: false, status: HttpStatus.CONFLICT, message: 'It isn`t possible to save location this shift since it has already finished'},HttpStatus.CONFLICT)
+                } else {
+                    if(!userInDB) throw new HttpException({ success: false, status: HttpStatus.NOT_FOUND, message: 'User does not exists or unauthorized'}, HttpStatus.NOT_FOUND)
+                }
+            })
+        } else {
+            throw new HttpException({ success: false, status: HttpStatus.UNAUTHORIZED, message: 'You`re unauthorized to update this location'},HttpStatus.UNAUTHORIZED)
+        }
+        return { location, guardLocation }
+    }
+
+    async deleteLocation(shiftId: number, clientId: number, userId: number, userEntity?: User) {
+        const conection = getConnection()
+        const shift = await this.shiftRepository.findOne({ shiftId, client: clientId },{ relations: ["guards"] })
+        if(!shift) throw new HttpException({ success: false, status: HttpStatus.NOT_FOUND, message: 'Shift does not exists or unauthorized'},HttpStatus.NOT_FOUND)
+
+        if(shift.guards.some(u => u.id === userEntity.id)) { 
+            conection.transaction( async transaction =>{
+                const guardhoursDB: Workedhours = await transaction.findOne(Workedhours,{ 
+                    guardId: userEntity.id,
+                    shiftHoursId: shiftId
+                })
+                const userInDB: User = await transaction.findOne(User, { id:userId })
+                    .then(u => !userEntity ? u : !!u && userEntity.id === u.id ? u : null)
+                if(userInDB){
+                    if(!guardhoursDB || guardhoursDB.start === null ) throw new HttpException({ success: false, status: HttpStatus.NOT_FOUND, message: 'It isn`t possible to delete location this shift since it has not already stared'},HttpStatus.NOT_FOUND)
+                    if(guardhoursDB.finish === null) {
+
+                        const guardLocationInDb = await transaction.findOne(GuardsLocation, { shiftId, clientId, userId })
+                        
+                        if (guardLocationInDb) {
+                            const guardLocation = await transaction.delete(GuardsLocation, { shiftId, clientId, userId })
+                            return guardLocation;
+                        } else throw new HttpException({ success: false, status: HttpStatus.CONFLICT, message: 'It isn`t possible to delete location this already not exists'},HttpStatus.CONFLICT)
+                    } else throw new HttpException({ success: false, status: HttpStatus.CONFLICT, message: 'It isn`t possible to delete location this shift since it has already finished'},HttpStatus.CONFLICT)
+                } else {
+                    if(!userInDB) throw new HttpException({ success: false, status: HttpStatus.NOT_FOUND, message: 'User does not exists or unauthorized'}, HttpStatus.NOT_FOUND)
+                }
+            })
+        } else throw new HttpException({ success: false, status: HttpStatus.UNAUTHORIZED, message: 'You`re unauthorized to delete this location'},HttpStatus.UNAUTHORIZED)
     }
 
     async timeInDB() {

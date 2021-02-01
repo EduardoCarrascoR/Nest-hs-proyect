@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpException, HttpStatus, Logger, Param, Post, Put, Res } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpException, HttpStatus, Logger, Param, Post, Put, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Shift, User as UserEntity} from '../../../entities';
 import { Auth, User } from '../../../common/decorators';
@@ -11,6 +11,7 @@ import { InjectRolesBuilder, RolesBuilder } from 'nest-access-control';
 import { PdfService } from 'src/pdf/pdf.service';
 import * as nodemailer from "nodemailer";
 import { ConfigService } from '@nestjs/config';
+import { GuardLocation } from 'src/modules/users/dtos';
 
 @ApiTags('Shifts')
 @Controller('shifts')
@@ -100,7 +101,6 @@ export class ShiftsController {
         return res.status(HttpStatus.OK).json({ success: true, message: 'Shift finalized' })
     }
 
-
     @Auth({
         possession: 'any',
         action: 'read',
@@ -117,15 +117,54 @@ export class ShiftsController {
     }
 
     @Auth({
+        possession: 'own',
+        action: 'update',
+        resource: AppResources.SHIFT,
+    })
+    @Post('/setGuardLocation/:shiftId/client/:clientId/guard/:userId')
+    async setguardLocation(@Param('shiftId') shiftId: number, @Param('clientId') clientId: number, @Param('userId') userId: number, @Body() guardLocation: GuardLocation, @User() user: UserEntity, @Res() res) {
+        if(!shiftId) throw new HttpException({ success: false, status: HttpStatus.BAD_REQUEST, message: "It's not possible to change the location without having an shift id" }, HttpStatus.BAD_REQUEST)
+        if(!clientId) throw new HttpException({ success: false, status: HttpStatus.BAD_REQUEST, message: "It's not possible to change the location without having an client id" }, HttpStatus.BAD_REQUEST)
+        if(!userId) throw new HttpException({ success: false, status: HttpStatus.BAD_REQUEST, message: "It's not possible to change the location without having an user id" }, HttpStatus.BAD_REQUEST)
+        
+        const glocation = await this.shiftService.setLocation(shiftId, clientId, userId, guardLocation, user)
+        if(glocation.location === true) {
+
+            return res.status(HttpStatus.ACCEPTED).json({ success: true, guardLocation: glocation.guardLocation, message: `Created location` })
+        } else {
+            if(glocation.location === false) 
+            return res.status(HttpStatus.ACCEPTED).json({ success: true, message: `Updated location` })
+
+        }
+    }
+
+    @Auth({
+        possession: 'own',
+        action: 'update',
+        resource: AppResources.SHIFT,
+    })
+    @Delete('/deleteGuardLocation/:shiftId/client/:clientId/guard/:userId')
+    async deleteguardLocation(@Param('shiftId') shiftId: number, @Param('clientId') clientId: number, @Param('userId') userId: number, @User() user: UserEntity, @Res() res) {
+        if(!shiftId) throw new HttpException({ success: false, status: HttpStatus.BAD_REQUEST, message: "It's not possible to change the location without having an shift id" }, HttpStatus.BAD_REQUEST)
+        if(!clientId) throw new HttpException({ success: false, status: HttpStatus.BAD_REQUEST, message: "It's not possible to change the location without having an client id" }, HttpStatus.BAD_REQUEST)
+        if(!userId) throw new HttpException({ success: false, status: HttpStatus.BAD_REQUEST, message: "It's not possible to change the location without having an user id" }, HttpStatus.BAD_REQUEST)
+        
+        await this.shiftService.deleteLocation(shiftId, clientId, userId, user)
+        
+        return res.status(HttpStatus.ACCEPTED).json({ success: true, message: `Deleted location` })
+
+    }
+
+    @Auth({
         possession: 'any',
         action: 'read',
         resource: AppResources.SHIFT,
     })
-    @Get("/pdf/:shiftId/client/:clientId")
+    @Get('/pdf/:shiftId/client/:clientId')
     async generatePdf(@Param('shiftId') shiftId: number, @Param('clientId') clientId: number, @Res() res, @User() user: UserEntity) {
         const shift = await this.shiftService.getShiftById(shiftId, clientId)
         const pdf:any  = await this.pdfService.generatePdf(user, shift)
-        if(pdf.error) throw new HttpException({ success: false, status: HttpStatus.BAD_REQUEST, message: "Error al crear pdf" }, HttpStatus.BAD_REQUEST)
+        if(pdf.error) throw new HttpException({ success: false, status: HttpStatus.BAD_REQUEST, message: "Error creating pdf" }, HttpStatus.BAD_REQUEST)
         await this.pdfService.sendMailPdf(pdf.filename, shift.clientClient, shift.date)
         
         return res.status(HttpStatus.ACCEPTED).json({ success: true, message: "Email send" })
