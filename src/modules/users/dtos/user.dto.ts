@@ -1,6 +1,7 @@
-import { IsEmail, IsString, MinLength, MaxLength, IsEnum, IsOptional, ArrayNotContains } from 'class-validator';
+import { IsEmail, IsString, MinLength, MaxLength, IsEnum, IsOptional, ArrayNotContains, IsNotEmpty, IsLatLong, IsLatitude, isLatLong, isMilitaryTime, IsMilitaryTime } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { AppRoles } from '../../../common/enums'
+import { GuardsLocation } from 'src/entities';
 
 export class CreateUserDTO {
 
@@ -41,3 +42,12 @@ export class UserDTO {
     readonly phone: string;
     readonly email: string;
 }
+
+export class GuardLocation {
+    
+    @IsNotEmpty()
+    @IsLatLong()
+    @ApiProperty()
+    readonly location: string
+}
+

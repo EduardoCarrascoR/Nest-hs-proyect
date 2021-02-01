@@ -5,12 +5,15 @@ import {
   CreateDateColumn,
   Entity,
   Index,
+  JoinColumn,
   ManyToMany,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
 import * as bcrypt from "bcrypt";
 import { Shift } from "./Shift.entity";
+import { GuardsLocation } from "./GuardsLocation.entity";
 
 @Entity("user", { schema: "hs" })
 export class User {
@@ -38,6 +41,12 @@ export class User {
   @Column("varchar", { name: "email_verified", nullable: true, length: 45 })
   emailVerified: string | null;
 
+  @Column("varchar", { name: "location", nullable: true, length: 200 })
+  location: string | null;
+
+  @Column({ name: "time_location", type: "time", nullable: true })
+  timeLocation: string | null;
+
   @Column("varchar", { name: "password", length: 200, select: false })
   password: string;
 
@@ -49,6 +58,9 @@ export class User {
 
   @ManyToMany(() => Shift, (shift) => shift.guards)
   shifts: Shift[];
+
+  @ManyToOne(() => GuardsLocation, (guardsLocation) => guardsLocation.user, {})
+  guardUserLocation: GuardsLocation;
 
   @BeforeInsert()
   @BeforeUpdate()
